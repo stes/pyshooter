@@ -12,7 +12,12 @@ white = 0xff, 0xff, 0xff
 
 screen = pygame.display.set_mode(size)
 
-tank = Entity(100, 100, pygame.image.load("tank1.gif").convert_alpha())
+tank = Tank(100, 100, pygame.image.load("tank1.gif").convert_alpha(), pygame.image.load("tank1_top.gif").convert_alpha())
+img = pygame.image.load('dirt.jpg')
+img = pygame.transform.scale(img, (800, 600))
+
+world = []
+world.append(tank)
 
 while 1:
     for event in pygame.event.get():
@@ -27,8 +32,21 @@ while 1:
                 tank.accelerate(0.5)
             elif event.key == pygame.K_DOWN:
                 tank.accelerate(-0.5)
-    tank.move()
+            elif event.key == pygame.K_n:
+                tank.rotate_foo(math.pi/16)
+            elif event.key == pygame.K_m:
+                tank.rotate_foo(-math.pi/16)
+            elif event.key == pygame.K_b:
+                missile = tank.shoot()
+                print missile
+                world.append(missile)
+                
     screen.fill(white)
-    tank.render(screen)
+    screen.blit(img, img.get_rect())
+    for entity in world:
+        if not entity.move():
+            world.remove(entity)
+        else:
+            entity.render(screen)
     pygame.display.flip()
     pygame.time.wait(10)
