@@ -137,6 +137,7 @@ class Tank(Entity):
             x, y = (self.location[0] - math.sin(self.aim_direction) * (1+self.velocity) * 10),\
                     (self.location[1] - math.cos(self.aim_direction) * (1+self.velocity) * 10)
             missile = Missile(x, y, pygame.image.load("missile.gif"), self)
+            self.ammo -= 1
             return missile
         return None
 
