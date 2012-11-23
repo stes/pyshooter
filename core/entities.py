@@ -70,6 +70,10 @@ class Tank(Entity):
     def step_back(self):
         self.location = self.old_location[:]
     
+    def to_base(self, b):
+        if b.owner == self:
+            self.ammo = 10
+    
     def move(self):
         self.old_location = self.location[:]
         
@@ -164,6 +168,10 @@ class Missile(Entity):
 
 class Base(Entity):
     
-    def __init__(self, x, y):
-        Entity.__init__(self, x, y)
+    def __init__(self, x, y, img, owner):
+        Entity.__init__(self, x, y, img)
+        self.owner = owner
+    
+    def move(self):
+        return True
         

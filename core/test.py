@@ -13,6 +13,8 @@ def check_collisions(world, entity):
                 if isinstance(entity, Tank):
                     entity.step_back()
                     e1.step_back()
+                if isinstance(entity, Base):
+                    e1.to_base(entity)
                 
 
 if __name__ == '__main__':
@@ -26,10 +28,15 @@ if __name__ == '__main__':
     tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"))
     tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"))
     
+    base1 = Base(100, 500, pygame.image.load("base.gif"), tank1)
+    base2 = Base(700, 100, pygame.image.load("base.gif"), tank2)
+    
     img = pygame.image.load('dirt.jpg')
     img = pygame.transform.scale(img, (800, 600))
     
     world = []
+    world.append(base1)
+    world.append(base2)
     world.append(tank1)
     world.append(tank2)
     
