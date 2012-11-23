@@ -44,9 +44,9 @@ if __name__ == '__main__':
                 elif event.key == pygame.K_DOWN:
                     tank1.accelerate(-0.05)
                 elif event.key == pygame.K_n:
-                    tank1.rotate_foo(math.pi/16)
+                    tank1.acc_rotation(+math.pi/2000)
                 elif event.key == pygame.K_m:
-                    tank1.rotate_foo(-math.pi/16)
+                    tank1.acc_rotation(-math.pi/2000)
                 elif event.key == pygame.K_b:
                     missile = tank1.shoot()
                     if missile != None:
@@ -56,6 +56,8 @@ if __name__ == '__main__':
                     tank1.accelerate(0)
                 elif event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                     tank1.rotate(0)
+                elif event.key == pygame.K_m or event.key == pygame.K_n:
+                    tank1.acc_rotation(0)
                     
         screen.fill(white)
         screen.blit(img, img.get_rect())

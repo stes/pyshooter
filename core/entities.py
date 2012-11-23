@@ -34,30 +34,8 @@ class Entity():
         self.bufimg, self.bufrect = tools.rot_center(self.img, self.img.get_rect(), self.angle * 180 / math.pi)
     
     def move(self):
-        old_location = self.location[:]
-        
-        if self.turn_acceleration != 0:
-            self.turn_velocity = max(min(self.turn_velocity + self.turn_acceleration, self.max_turn_speed), -self.max_turn_speed)
-        elif self.turn_velocity > 0:
-            self.turn_velocity = max(self.turn_velocity - 0.0005 * math.pi, 0)
-        elif self.turn_velocity < 0:
-            self.turn_velocity = min(self.turn_velocity + 0.0005 * math.pi, 0)
-        if self.turn_velocity != 0:
-            self.set_angle(self.angle + self.turn_velocity)
-        
-        if self.acceleration != 0:
-            mult = 3
-            if self.velocity * self.acceleration > 0: mult = 1
-            self.velocity = max(min(self.velocity + self.acceleration * mult, self.max_speed), -self.max_speed)
-        elif self.velocity > 0:
-            self.velocity = max(self.velocity - 0.2, 0)
-        elif self.velocity < 0:
-            self.velocity = min(self.velocity + 0.2, 0)
         self.location[0] -= math.sin(self.angle) * self.velocity
         self.location[1] -= math.cos(self.angle) * self.velocity
-        
-        if not self.map_rect.contains(pygame.Rect(self.location[0]-self.bufrect[2]/2, self.location[1]-self.bufrect[3]/2, self.bufrect[2], self.bufrect[3])):
-            self.location = old_location[:]
         return self.alive()
     
     def render(self, display):
@@ -85,11 +63,57 @@ class Tank(Entity):
         self.top_img = top_img
         self.top_bufimg = top_img
         self.top_bufrect = top_img.get_rect()
+        self.aim_velocity = 0
+        self.aim_acceleration = 0
     
-    def rotate_foo(self, angle):
-        self.aim_direction += angle
+    def move(self):
+        old_location = self.location[:]
+        
+        if self.turn_acceleration != 0:
+            self.turn_velocity = max(min(self.turn_velocity + self.turn_acceleration, self.max_turn_speed), -self.max_turn_speed)
+        elif self.turn_velocity > 0:
+            self.turn_velocity = max(self.turn_velocity - 0.0005 * math.pi, 0)
+        elif self.turn_velocity < 0:
+            self.turn_velocity = min(self.turn_velocity + 0.0005 * math.pi, 0)
+        if self.turn_velocity != 0:
+            self.set_angle(self.angle + self.turn_velocity)
+        
+        if self.aim_acceleration != 0:
+            self.aim_velocity = max(min(self.aim_velocity + self.aim_acceleration, self.max_turn_speed), -self.max_turn_speed)
+        elif self.aim_velocity > 0:
+            self.aim_velocity = max(self.aim_velocity - 0.005 * math.pi, 0)
+        elif self.aim_velocity < 0:
+            self.aim_velocity = min(self.aim_velocity + 0.005 * math.pi, 0)
+        if self.aim_velocity != 0:
+            self.rotate_foo(self.aim_velocity)
+        
+        if self.acceleration != 0:
+            mult = 3
+            if self.velocity * self.acceleration > 0:
+                mult = 1
+            self.velocity = max(min(self.velocity + self.acceleration * mult, self.max_speed), -self.max_speed)
+        elif self.velocity > 0:
+            self.velocity = max(self.velocity - 0.2, 0)
+        elif self.velocity < 0:
+            self.velocity = min(self.velocity + 0.2, 0)
+
+        Entity.move(self)
+        
+        if not self.map_rect.contains(pygame.Rect(self.location[0]-self.bufrect[2]/2, self.location[1]-self.bufrect[3]/2, self.bufrect[2], self.bufrect[3])):
+            self.location = old_location[:]
+        
+        return self.alive()
+    
+    def acc_rotation(self, acc):
+        self.aim_acceleration = acc
+    
+    def rotate_to(self, angle):
+        self.aim_direction = angle
         self.top_bufimg, self.top_bufrect = tools.rot_center(self.top_img, self.top_img.get_rect(), self.aim_direction * 180 / math.pi)
     
+    def rotate_foo(self, angle):
+        self.rotate_to(self.aim_direction + angle)
+        
     def render(self, display):
         Entity.render(self, display)
         rect = self.top_bufrect
