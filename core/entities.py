@@ -48,7 +48,7 @@ class Entity():
         return self.get_radius()**2 > (self.location[0] - x)**2 + (self.location[1] - y)**2
     
     def collide_entities(self, other):
-        return (self.get_radius()+other.get_radius())**2 > (self.location[0] - other.location[0])**2 + (self.location[1] - other.location[1])**2
+        return 0.3*(self.get_radius()+other.get_radius())**2 > (self.location[0] - other.location[0])**2 + (self.location[1] - other.location[1])**2
 
     def alive(self):
         return True
@@ -65,9 +65,13 @@ class Tank(Entity):
         self.top_bufrect = top_img.get_rect()
         self.aim_velocity = 0
         self.aim_acceleration = 0
+        self.old_location = self.location
+    
+    def step_back(self):
+        self.location = self.old_location[:]
     
     def move(self):
-        old_location = self.location[:]
+        self.old_location = self.location[:]
         
         if self.turn_acceleration != 0:
             self.turn_velocity = max(min(self.turn_velocity + self.turn_acceleration, self.max_turn_speed), -self.max_turn_speed)
@@ -100,7 +104,7 @@ class Tank(Entity):
         Entity.move(self)
         
         if not self.map_rect.contains(pygame.Rect(self.location[0]-self.bufrect[2]/2, self.location[1]-self.bufrect[3]/2, self.bufrect[2], self.bufrect[3])):
-            self.location = old_location[:]
+            self.step_back()
         
         return self.alive()
     

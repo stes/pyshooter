@@ -7,21 +7,24 @@ import sys
 def check_collisions(world, entity):
     for e1 in world:
         if e1 != entity and e1.collide_entities(entity):
-            if isinstance(e1, Tank) and isinstance(entity, Missile):
-                e1.damage(entity)
+            if isinstance(e1, Tank):
+                if isinstance(entity, Missile):
+                    e1.damage(entity)
+                if isinstance(entity, Tank):
+                    entity.step_back()
+                    e1.step_back()
                 
 
 if __name__ == '__main__':
     pygame.init()
     
     size = width, height = 800, 600
-    speed = [1, 1]
     white = 0xff, 0xff, 0xff
     
     screen = pygame.display.set_mode(size)
     
     tank1 = Tank(100, 100, pygame.image.load("tank1.gif").convert_alpha(), pygame.image.load("tank1_top.gif").convert_alpha())
-    tank2 = Tank(100, 100, pygame.image.load("tank2.gif").convert_alpha(), pygame.image.load("tank2_top.gif").convert_alpha())
+    tank2 = Tank(500, 100, pygame.image.load("tank2.gif").convert_alpha(), pygame.image.load("tank2_top.gif").convert_alpha())
     
     img = pygame.image.load('dirt.jpg')
     img = pygame.transform.scale(img, (800, 600))
