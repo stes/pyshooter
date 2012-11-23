@@ -23,15 +23,15 @@ while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-        if event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                tank.rotate(+math.pi/16)
+                tank.rotate(+math.pi/6000)
             elif event.key == pygame.K_RIGHT:
-                tank.rotate(-math.pi/16)
+                tank.rotate(-math.pi/6000)
             elif event.key == pygame.K_UP:
-                tank.accelerate(0.5)
+                tank.accelerate(0.05)
             elif event.key == pygame.K_DOWN:
-                tank.accelerate(-0.5)
+                tank.accelerate(-0.05)
             elif event.key == pygame.K_n:
                 tank.rotate_foo(math.pi/16)
             elif event.key == pygame.K_m:
@@ -40,6 +40,11 @@ while 1:
                 missile = tank.shoot()
                 print missile
                 world.append(missile)
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                tank.accelerate(0)
+            elif event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
+                tank.rotate(0)
                 
     screen.fill(white)
     screen.blit(img, img.get_rect())

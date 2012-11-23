@@ -28,6 +28,7 @@ class Entity():
     
     def rotate(self, a):
         self.turn_acceleration = a
+    
     def set_angle(self, angle):
         self.angle = angle
         self.bufimg, self.bufrect = tools.rot_center(self.img, self.img.get_rect(), self.angle * 180 / math.pi)
