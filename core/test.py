@@ -23,8 +23,8 @@ if __name__ == '__main__':
     
     screen = pygame.display.set_mode(size)
     
-    tank1 = Tank(100, 100, pygame.image.load("tank1.gif").convert_alpha(), pygame.image.load("tank1_top.gif").convert_alpha())
-    tank2 = Tank(500, 100, pygame.image.load("tank2.gif").convert_alpha(), pygame.image.load("tank2_top.gif").convert_alpha())
+    tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"))
+    tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"))
     
     img = pygame.image.load('dirt.jpg')
     img = pygame.transform.scale(img, (800, 600))
@@ -54,6 +54,22 @@ if __name__ == '__main__':
                     missile = tank1.shoot()
                     if missile != None:
                         world.append(missile)
+                elif event.key == pygame.K_a:
+                    tank2.rotate(+math.pi/6000)
+                elif event.key == pygame.K_d:
+                    tank2.rotate(-math.pi/6000)
+                elif event.key == pygame.K_w:
+                    tank2.accelerate(0.05)
+                elif event.key == pygame.K_s:
+                    tank2.accelerate(-0.05)
+                elif event.key == pygame.K_g:
+                    tank2.acc_rotation(+math.pi/2000)
+                elif event.key == pygame.K_h:
+                    tank2.acc_rotation(-math.pi/2000)
+                elif event.key == pygame.K_j:
+                    missile = tank2.shoot()
+                    if missile != None:
+                        world.append(missile)
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     tank1.accelerate(0)
@@ -61,6 +77,12 @@ if __name__ == '__main__':
                     tank1.rotate(0)
                 elif event.key == pygame.K_m or event.key == pygame.K_n:
                     tank1.acc_rotation(0)
+                elif event.key == pygame.K_w or event.key == pygame.K_s:
+                    tank2.accelerate(0)
+                elif event.key == pygame.K_a or event.key == pygame.K_d:
+                    tank2.rotate(0)
+                elif event.key == pygame.K_g or event.key == pygame.K_h:
+                    tank2.acc_rotation(0)
                     
         screen.fill(white)
         screen.blit(img, img.get_rect())
@@ -70,5 +92,25 @@ if __name__ == '__main__':
             else:
                 check_collisions(world, entity)
                 entity.render(screen)
+        
+            pygame.draw.rect(screen, pygame.Color(0x44, 0x44, 0x44), (0, 0, 500, 60))
+        pygame.draw.rect(screen, pygame.Color(0x44, 0x44, 0x44), (300, 540, 500, 60))
+        
+        missile = pygame.image.load("missile.gif")
+        
+        missile_rect = missile.get_rect()
+        for i in range(tank1.ammo):
+            screen.blit(missile, [10+missile_rect[2]*i*2, 10])
+        
+        missile_rect = missile.get_rect()
+        for i in range(tank2.ammo):
+            screen.blit(missile, [310+missile_rect[2]*i*2, 550])
+        
+        pygame.draw.rect(screen, pygame.Color(0xff, 0, 0), (10, 25, 200, 20), 2)
+        pygame.draw.rect(screen, pygame.Color(0xff, 0, 0), (10, 25, tank1.health*2, 20))
+        
+        pygame.draw.rect(screen, pygame.Color(0xff, 0, 0), (310, 565, 200, 20), 2)
+        pygame.draw.rect(screen, pygame.Color(0xff, 0, 0), (310, 565, tank2.health*2, 20))
+    
         pygame.display.flip()
         pygame.time.wait(10)
