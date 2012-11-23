@@ -12,33 +12,41 @@ white = 0xff, 0xff, 0xff
 
 screen = pygame.display.set_mode(size)
 
-tank = Entity(100, 100, pygame.image.load("tank1.gif").convert_alpha())
-tank2 = Entity(300, 300, pygame.image.load("tank2.gif").convert_alpha())
+tank = Tank(100, 100, pygame.image.load("tank1.gif").convert_alpha(), pygame.image.load("tank1_top.gif").convert_alpha())
+img = pygame.image.load('dirt.jpg')
+img = pygame.transform.scale(img, (800, 600))
 
-
-objects = [tank, tank2]
+world = []
+world.append(tank)
 
 while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
-                tank.rotate(+math.pi/6000)
+                tank.rotate(+math.pi/16)
             elif event.key == pygame.K_RIGHT:
-                tank.rotate(-math.pi/6000)
+                tank.rotate(-math.pi/16)
             elif event.key == pygame.K_UP:
-                tank.accelerate(0.05)
+                tank.accelerate(0.5)
             elif event.key == pygame.K_DOWN:
-                tank.accelerate(-0.05)
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                tank.accelerate(0)
-            elif event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
-                tank.rotate(0)
-    tank.move()
+                tank.accelerate(-0.5)
+            elif event.key == pygame.K_n:
+                tank.rotate_foo(math.pi/16)
+            elif event.key == pygame.K_m:
+                tank.rotate_foo(-math.pi/16)
+            elif event.key == pygame.K_b:
+                missile = tank.shoot()
+                print missile
+                world.append(missile)
+                
     screen.fill(white)
-    for obj in objects:
-        obj.render(screen)
+    screen.blit(img, img.get_rect())
+    for entity in world:
+        if not entity.move():
+            world.remove(entity)
+        else:
+            entity.render(screen)
     pygame.display.flip()
     pygame.time.wait(10)
