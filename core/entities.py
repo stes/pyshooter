@@ -67,7 +67,10 @@ class Entity():
         return (self.img.get_rect()[2] + self.img.get_rect()[3]) / 2
     
     def collide(self, x, y):
-        return self.get_radius(self)**2 > (self.location[0] - x)**2 + (self.location[1] - y)**2
+        return self.get_radius()**2 > (self.location[0] - x)**2 + (self.location[1] - y)**2
+    
+    def collide_entities(self, other):
+        return (self.get_radius()+other.get_radius())**2 > (self.location[0] - other.location[0])**2 + (self.location[1] - other.location[1])**2
 
     def alive(self):
         return True
