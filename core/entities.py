@@ -80,7 +80,7 @@ class Tank(Entity):
     def __init__(self, x, y, img, top_img):
         Entity.__init__(self, x, y, img)
         self.aim_direction = 0
-        self.ammo = 0
+        self.ammo = 10
         self.health = 100
         self.top_img = top_img
         self.top_bufimg = top_img
