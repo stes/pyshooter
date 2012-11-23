@@ -58,7 +58,7 @@ class Entity():
         
         if not self.map_rect.contains(pygame.Rect(self.location[0]-self.bufrect[2]/2, self.location[1]-self.bufrect[3]/2, self.bufrect[2], self.bufrect[3])):
             self.location = old_location[:]
-        return True
+        return self.alive()
     
     def render(self, display):
         display.blit(self.bufimg, [self.location[i] - self.bufrect[i+2]/2 for i in [0, 1]])
@@ -80,7 +80,7 @@ class Tank(Entity):
     def __init__(self, x, y, img, top_img):
         Entity.__init__(self, x, y, img)
         self.aim_direction = 0
-        self.ammo = 0
+        self.ammo = 10
         self.health = 100
         self.top_img = top_img
         self.top_bufimg = top_img
@@ -94,12 +94,23 @@ class Tank(Entity):
         Entity.render(self, display)
         rect = self.top_bufrect
         display.blit(self.top_bufimg, [self.location[i] - rect[i+2]/2 for i in [0, 1]])
+    
+    def damage(self, missile):
+        if missile.owner != self:
+            self.health -= missile.damage
+            missile.destroy()
+            print "I was damaged!!! %d" % self.health
+    
+    def alive(self):
+        return self.health > 0
 
     def shoot(self):
-        x, y = (self.location[0] - math.sin(self.aim_direction) * (1+self.velocity) * 10),\
-                (self.location[1] - math.cos(self.aim_direction) * (1+self.velocity) * 10)
-        missile = Missile(x, y, pygame.image.load("missile.gif"), self)
-        return missile
+        if self.ammo > 0:
+            x, y = (self.location[0] - math.sin(self.aim_direction) * (1+self.velocity) * 10),\
+                    (self.location[1] - math.cos(self.aim_direction) * (1+self.velocity) * 10)
+            missile = Missile(x, y, pygame.image.load("missile.gif"), self)
+            return missile
+        return None
 
 class Missile(Entity):
     
@@ -108,10 +119,14 @@ class Missile(Entity):
         self.velocity = 10
         self.owner = owner
         self.set_angle(owner.aim_direction)
-        self.ttl = 20
+        self.ttl = 200
+        self.damage = 10
+    
+    def destroy(self):
+        self.ttl = 0
     
     def alive(self):
-        return (self.ttl > 0)
+        return (self.ttl > 0) and (self.velocity > 2)
     
     def move(self):
         Entity.move(self)
