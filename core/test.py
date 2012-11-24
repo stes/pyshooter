@@ -3,6 +3,11 @@ from entities import *
 import os
 import pygame
 import sys
+from particlesys import ParticleSystem
+
+WIDTH = 800
+HEIGHT = 600
+psys = ParticleSystem()
 
 def check_collisions(world, entity):
     for p, e1 in world:
@@ -10,12 +15,10 @@ def check_collisions(world, entity):
             if isinstance(e1, Tank):
                 if isinstance(entity, Missile):
                     e1.damage(entity)
+                    psys.explosion(entity.location[0], entity.location[1], 200)
                 if isinstance(entity, Tank):
                     entity.step_back()
                     e1.step_back()
-
-WIDTH = 800
-HEIGHT = 600
 
 if __name__ == '__main__':
     pygame.init()
@@ -101,6 +104,9 @@ if __name__ == '__main__':
             else:
                 check_collisions(world, entity)
                 entity.render(screen)
+        
+        psys.tick()
+        psys.render(screen)
         
         pygame.draw.rect(screen, pygame.Color(0x44, 0x44, 0x44), (0, 0, 500, 60))
         pygame.draw.rect(screen, pygame.Color(0x44, 0x44, 0x44), (300, 540, 500, 60))
