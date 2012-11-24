@@ -1,32 +1,27 @@
-
-from entities import *
-import entities
-import os
+from entities import Tank, Missile, Base
+from particlesys import ParticleSystem
 import pygame
 import sys
-from particlesys import ParticleSystem
 
 WIDTH = 800
 HEIGHT = 600
 psys = ParticleSystem()
-KEY_BINDINGS_1 = {"left": pygame.K_LEFT,
-                "right" : pygame.K_RIGHT,
-                "up" : pygame.K_UP,
-                "down": pygame.K_DOWN,
-                "gun_left": pygame.K_KP1,
-                "gun_right": pygame.K_KP3,
-                "gun_fire": pygame.K_KP2}
-KEY_BINDINGS_2 ={"left": pygame.K_a,
-                "right" : pygame.K_d,
-                "up" : pygame.K_w,
-                "down": pygame.K_s,
-                "gun_left": pygame.K_g,
-                "gun_right": pygame.K_j,
-                "gun_fire": pygame.K_h}
-KEY_BINDINGS = [KEY_BINDINGS_1, KEY_BINDINGS_2]
+KEY_BINDINGS_1 = {pygame.K_LEFT: "left",
+                pygame.K_RIGHT: "right",
+                pygame.K_UP: "up",
+                pygame.K_DOWN: "down",
+                pygame.K_KP1: "gun_left",
+                pygame.K_KP3: "gun_right",
+                pygame.K_KP2: "gun_fire"}
+KEY_BINDINGS_2 = {pygame.K_a: "left",
+                pygame.K_d: "right",
+                pygame.K_w: "up",
+                pygame.K_s: "down",
+                pygame.K_g: "gun_left",
+                pygame.K_j: "gun_right",
+                pygame.K_h: "gun_fire"}
 
-def key(action, tank):
-    return KEY_BINDINGS[tank][action]
+input_listener = []
 
 def check_collisions(world, entity):
     for p, e1 in world:
@@ -54,41 +49,17 @@ def render_gui(screen):
         screen.blit(missile, [WIDTH - missile_rect[2]*i*2, HEIGHT-40])
     
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, 200, 20), 2)
-    pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, tank2.health*200/entities.HEALTH, 20))
+    pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, tank2.health*200/Tank.MAX_HEALTH, 20))
     
     pygame.draw.rect(screen, pygame.Color(0, 128, 0), (10, 10, 200, 10), 2)
-    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (10, 10, tank2.shoot_reload*200/entities.RELOAD_TIME, 10))
+    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (10, 10, tank2.shoot_reload*200/Tank.RELOAD_TIME, 10))
 
     
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (310, 565, 200, 20), 2)
-    pygame.draw.rect(screen, pygame.Color(128, 0, 0), (310, 565, tank1.health*200/entities.HEALTH, 20))
+    pygame.draw.rect(screen, pygame.Color(128, 0, 0), (310, 565, tank1.health*200/Tank.MAX_HEALTH, 20))
     
     pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, 200, 10), 2)
-    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, tank1.shoot_reload*200/entities.RELOAD_TIME, 10))
-
-    
-def process_keyevent(event, tank1, tank2):
-    k = event.key
-    pl = 0 if k in KEY_BINDINGS_1.values() else 1
-    tank = tank1 if pl==0 else tank2
-    if (event.type == pygame.KEYDOWN):
-        if k == key("left", pl): tank.rotate(+math.pi/6000)
-        elif k == key("right", pl): tank.rotate(-math.pi/6000)
-        elif k == key("up", pl): tank.accelerate(0.05)
-        elif k == key("down", pl): tank.accelerate(-0.05)
-        elif k == key("gun_left", pl): tank.acc_rotation(+math.pi/2000)
-        elif k == key("gun_right", pl): tank.acc_rotation(-math.pi/2000)
-        elif k == key("gun_fire", pl):
-            missile = tank.shoot()
-            if missile != None:
-                world.append([missile.priority, missile])
-    elif event.type == pygame.KEYUP:
-        if event.key == key("up", pl) or event.key == key("down", pl):
-            tank.accelerate(0)
-        elif event.key == key("right", pl) or event.key == key("left", pl):
-            tank.rotate(0)
-        elif event.key == key("gun_right", pl) or event.key == key("gun_left", pl):
-            tank.acc_rotation(0)
+    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, tank1.shoot_reload*200/Tank.RELOAD_TIME, 10))
         
 
 def game_loop(tank1, tank2, world):
@@ -97,8 +68,9 @@ def game_loop(tank1, tank2, world):
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type in [pygame.KEYDOWN, pygame.KEYUP]:
-                process_keyevent(event, tank1, tank2)
-                    
+                for listener in input_listener:
+                    listener.on_input(event.key, event.type == pygame.KEYDOWN)
+        
         screen.fill(white)
         screen.blit(img, img.get_rect())
         world.sort()
@@ -125,8 +97,11 @@ if __name__ == '__main__':
     
     screen = pygame.display.set_mode(size)
     
-    tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"))
-    tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"))
+    tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
+    tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
+    
+    input_listener.append(tank1)
+    input_listener.append(tank2)
     
     base1 = Base(100, 500, pygame.image.load("base.gif"), tank1)
     base2 = Base(700, 100, pygame.image.load("base.gif"), tank2)
@@ -140,6 +115,6 @@ if __name__ == '__main__':
     world.append(tank1)
     world.append(tank2)
     world = [[e.priority, e] for e in world]
+    tank1.set_world(world)
+    tank2.set_world(world)
     game_loop(tank1, tank2, world)
-    
-    

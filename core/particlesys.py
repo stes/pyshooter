@@ -5,7 +5,6 @@ Created on 24.11.2012
 '''
 
 import pygame, math
-from entities import Entity
 import random
 
 class ParticleSystem:

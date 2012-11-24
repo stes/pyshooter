@@ -7,16 +7,6 @@ import math
 import tools
 import pygame
 
-''' Game Constants '''
-
-MAX_SPEED = 3
-MAX_TURN_SPEED = 0.01 * math.pi
-AMMO = 10
-HEALTH = 100
-RELOAD_TIME = 100
-
-'''                '''
-
 class Entity():
     
     def __init__(self, x, y, img, priority):
@@ -29,16 +19,8 @@ class Entity():
         self.img = img
         self.bufimg = self.img
         self.bufrect = self.bufimg.get_rect()
-        self.max_speed = MAX_SPEED
-        self.max_turn_speed = MAX_TURN_SPEED
         self.map_rect = pygame.Rect(0, 0, 800, 600)
         self.priority = priority
-    
-    def accelerate(self, a):
-        self.acceleration = a
-    
-    def rotate(self, a):
-        self.turn_acceleration = a
     
     def set_angle(self, angle):
         self.angle = angle
@@ -65,12 +47,15 @@ class Entity():
         return True
 
 class Tank(Entity):
+    MAX_SPEED = 3
+    MAX_TURN_SPEED = 0.01 * math.pi
+    MAX_AMMO = 10
+    MAX_HEALTH = 100
+    RELOAD_TIME = 100
     
-    def __init__(self, x, y, img, top_img):
+    def __init__(self, x, y, img, top_img, key_binding):
         Entity.__init__(self, x, y, img, 10)
         self.aim_direction = 0
-        self.ammo = AMMO
-        self.health = HEALTH
         self.top_img = top_img
         self.top_bufimg = top_img
         self.top_bufrect = top_img.get_rect()
@@ -78,22 +63,25 @@ class Tank(Entity):
         self.aim_acceleration = 0
         self.old_location = self.location
         self.shoot_reload = 0
+        self.key_binding = key_binding
+        self.ammo = Tank.MAX_AMMO
+        self.health = Tank.MAX_HEALTH
         
     def ready_to_shoot(self):
-        return self.shoot_reload == RELOAD_TIME and self.ammo > 0
+        return self.shoot_reload == Tank.RELOAD_TIME and self.ammo > 0
     
     def step_back(self):
         self.location = self.old_location[:]
     
     def to_base(self, b):
         if b.owner == self:
-            self.ammo = AMMO
+            self.ammo = Tank.MAX_AMMO
     
     def move(self):
         self.old_location = self.location[:]
         
         if self.turn_acceleration != 0:
-            self.turn_velocity = max(min(self.turn_velocity + self.turn_acceleration, self.max_turn_speed), -self.max_turn_speed)
+            self.turn_velocity = max(min(self.turn_velocity + self.turn_acceleration, Tank.MAX_TURN_SPEED), -Tank.MAX_TURN_SPEED)
         elif self.turn_velocity > 0:
             self.turn_velocity = max(self.turn_velocity - 0.0005 * math.pi, 0)
         elif self.turn_velocity < 0:
@@ -102,19 +90,19 @@ class Tank(Entity):
             self.set_angle(self.angle + self.turn_velocity)
         
         if self.aim_acceleration != 0:
-            self.aim_velocity = max(min(self.aim_velocity + self.aim_acceleration, self.max_turn_speed), -self.max_turn_speed)
+            self.aim_velocity = max(min(self.aim_velocity + self.aim_acceleration, Tank.MAX_TURN_SPEED), -Tank.MAX_TURN_SPEED)
         elif self.aim_velocity > 0:
             self.aim_velocity = max(self.aim_velocity - 0.005 * math.pi, 0)
         elif self.aim_velocity < 0:
             self.aim_velocity = min(self.aim_velocity + 0.005 * math.pi, 0)
         if self.aim_velocity != 0:
-            self.rotate_gun_by(self.aim_velocity)
+            self.rotate_gun_to(self.aim_direction + self.aim_velocity)
         
         if self.acceleration != 0:
             mult = 3
             if self.velocity * self.acceleration > 0:
                 mult = 1
-            self.velocity = max(min(self.velocity + self.acceleration * mult, self.max_speed), -self.max_speed)
+            self.velocity = max(min(self.velocity + self.acceleration * mult, Tank.MAX_SPEED), -Tank.MAX_SPEED)
         elif self.velocity > 0:
             self.velocity = max(self.velocity - 0.2, 0)
         elif self.velocity < 0:
@@ -128,20 +116,14 @@ class Tank(Entity):
             if self.location[i]+self.bufrect[i+2]/2 > self.map_rect[i]+self.map_rect[i+2]:
                 self.location[i] = self.map_rect[i]+self.map_rect[i+2] - self.bufrect[i+2]/2
         
-        self.shoot_reload = min(self.shoot_reload+1, RELOAD_TIME)
+        self.shoot_reload = min(self.shoot_reload+1, Tank.RELOAD_TIME)
         
         return self.alive()
-    
-    def acc_rotation(self, acc):
-        self.aim_acceleration = acc
     
     def rotate_gun_to(self, angle):
         self.aim_direction = angle
         self.top_bufimg, self.top_bufrect = tools.rot_center(self.top_img, self.top_img.get_rect(), self.aim_direction * 180 / math.pi)
     
-    def rotate_gun_by(self, angle):
-        self.rotate_gun_to(self.aim_direction + angle)
-        
     def render(self, display):
         Entity.render(self, display)
         rect = self.top_bufrect
@@ -164,6 +146,24 @@ class Tank(Entity):
             self.shoot_reload = 0
             return missile
         return None
+    
+    def set_world(self, world):
+        self.world = world
+    
+    def on_input(self, key, state):
+        if self.key_binding.has_key(key):
+            action = self.key_binding[key]
+            mult = 1 if state else -1
+            if action == "left": self.turn_acceleration += math.pi/2000 * mult
+            elif action == "right": self.turn_acceleration -= math.pi/2000 * mult
+            elif action == "up": self.acceleration += 0.05 * mult
+            elif action == "down": self.acceleration -= 0.05 * mult
+            elif action == "gun_left": self.aim_acceleration += math.pi/2000 * mult
+            elif action == "gun_right": self.aim_acceleration -= math.pi/2000 * mult
+            elif action == "gun_fire":
+                missile = self.shoot()
+                if missile != None:
+                    self.world.append([missile.priority, missile])
 
 class Missile(Entity):
     
