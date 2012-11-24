@@ -13,6 +13,7 @@ MAX_SPEED = 3
 MAX_TURN_SPEED = 0.01 * math.pi
 AMMO = 10
 HEALTH = 100
+RELOAD_TIME = 100
 
 '''                '''
 
@@ -76,6 +77,10 @@ class Tank(Entity):
         self.aim_velocity = 0
         self.aim_acceleration = 0
         self.old_location = self.location
+        self.shoot_reload = 0
+        
+    def ready_to_shoot(self):
+        return self.shoot_reload == RELOAD_TIME and self.ammo > 0
     
     def step_back(self):
         self.location = self.old_location[:]
@@ -120,6 +125,8 @@ class Tank(Entity):
         if not self.map_rect.contains(pygame.Rect(self.location[0]-self.bufrect[2]/2, self.location[1]-self.bufrect[3]/2, self.bufrect[2], self.bufrect[3])):
             self.step_back()
         
+        self.shoot_reload = min(self.shoot_reload+1, RELOAD_TIME)
+        
         return self.alive()
     
     def acc_rotation(self, acc):
@@ -146,11 +153,12 @@ class Tank(Entity):
         return self.health > 0
 
     def shoot(self):
-        if self.ammo > 0:
+        if self.ready_to_shoot():
             x, y = (self.location[0] - math.sin(self.aim_direction) * 40),\
                     (self.location[1] - math.cos(self.aim_direction) * 40)
             missile = Missile(x, y, pygame.image.load("missile.gif"), self)
             self.ammo -= 1
+            self.shoot_reload = 0
             return missile
         return None
 

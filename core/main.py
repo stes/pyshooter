@@ -46,18 +46,26 @@ def render_gui(screen):
     missile = pygame.image.load("missile.gif")
     
     missile_rect = missile.get_rect()
-    for i in range(tank1.ammo):
+    for i in range(tank2.ammo):
         screen.blit(missile, [480-missile_rect[2]*i*2, 20])
     
     missile_rect = missile.get_rect()
-    for i in range(tank2.ammo):
+    for i in range(tank1.ammo):
         screen.blit(missile, [WIDTH - missile_rect[2]*i*2, HEIGHT-40])
     
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, 200, 20), 2)
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, tank2.health*200/entities.HEALTH, 20))
     
+    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (10, 10, 200, 10), 2)
+    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (10, 10, tank2.shoot_reload*200/entities.RELOAD_TIME, 10))
+
+    
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (310, 565, 200, 20), 2)
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (310, 565, tank1.health*200/entities.HEALTH, 20))
+    
+    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, 200, 10), 2)
+    pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, tank1.shoot_reload*200/entities.RELOAD_TIME, 10))
+
     
 def process_keyevent(event, tank1, tank2):
     k = event.key
