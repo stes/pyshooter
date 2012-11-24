@@ -122,8 +122,11 @@ class Tank(Entity):
 
         Entity.move(self)
         
-        if not self.map_rect.contains(pygame.Rect(self.location[0]-self.bufrect[2]/2, self.location[1]-self.bufrect[3]/2, self.bufrect[2], self.bufrect[3])):
-            self.step_back()
+        for i in [0, 1]:
+            if self.location[i]-self.bufrect[i+2]/2 < self.map_rect[i]:
+                self.location[i] = self.map_rect[i] + self.bufrect[i+2]/2
+            if self.location[i]+self.bufrect[i+2]/2 > self.map_rect[i]+self.map_rect[i+2]:
+                self.location[i] = self.map_rect[i]+self.map_rect[i+2] - self.bufrect[i+2]/2
         
         self.shoot_reload = min(self.shoot_reload+1, RELOAD_TIME)
         
