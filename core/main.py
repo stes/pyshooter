@@ -1,11 +1,24 @@
+'''
+This is the project's main file. It contains the game loop which
+handles the interaction between players in the game.
+
+25.11.12
+'''
+
+
 from entities import Tank, Missile, Base
 from particlesys import ParticleSystem
 import pygame
 import sys
 
+''' General constants '''
 WIDTH = 800
 HEIGHT = 600
+'''                    '''
+
 psys = ParticleSystem()
+
+''' Key bindings for both players '''
 KEY_BINDINGS_1 = {pygame.K_LEFT: "left",
                 pygame.K_RIGHT: "right",
                 pygame.K_UP: "up",
@@ -20,6 +33,7 @@ KEY_BINDINGS_2 = {pygame.K_a: "left",
                 pygame.K_g: "gun_left",
                 pygame.K_j: "gun_right",
                 pygame.K_h: "gun_fire"}
+'''                                '''
 
 input_listener = []
 
@@ -63,6 +77,21 @@ def render_gui(screen):
         
 
 def game_loop(tank1, tank2, world):
+    '''
+    This method implements the game loop.
+    The game loop basically consists of steps:
+    (i) check if any events occurred. If that's the case, broadcast
+    events to all event listeners
+    (ii) Perform an update (tick) on all entities in the world.
+    This includes the tanks, bases, missiles and the particle system.
+    (iii) Render the new configuration of the world. Start with basic
+    elements like the background and the bases. Afterwards, render the
+    missiles, the tanks and at last the GUI elements. The order used
+    for rendering is defined by the >priority< of each entity. The world
+    list is sorted before rendering is performed in order to guarantee
+    the order specified above
+    (iv) Finally, we wait some time before performing the next loop
+    '''
     while 1:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,6 +119,14 @@ def game_loop(tank1, tank2, world):
         pygame.time.wait(10)
 
 if __name__ == '__main__':
+    '''
+    This is the program's starting point.
+    We initialize the pygame module, create a screen and load
+    resources (images etc.) in order to create the entities involved in
+    the game.
+    All entities are placed in a list, which we call world.
+    At last, the game loop can be started using this list.
+    '''
     pygame.init()
     
     size = width, height = WIDTH, HEIGHT

@@ -1,7 +1,8 @@
 '''
 Created on 23.11.2012
 
-@author: Steffen
+This file contains the entities involved in the game. All entities use
+the base class implementation 'Entity'.
 '''
 import math
 import tools

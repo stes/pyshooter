@@ -1,7 +1,7 @@
 '''
 Created on 24.11.2012
 
-@author: Steffen
+This file contains the basic implementation of a simple particle system.
 '''
 
 import pygame, math
