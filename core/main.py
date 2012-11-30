@@ -92,7 +92,10 @@ def game_loop(tank1, tank2, world):
     the order specified above
     (iv) Finally, we wait some time before performing the next loop
     '''
+    
+    starttime = 0
     while 1:
+        starttime = pygame.time.get_ticks()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -116,7 +119,12 @@ def game_loop(tank1, tank2, world):
         render_gui(screen)
         
         pygame.display.flip()
-        pygame.time.wait(10)
+        span = pygame.time.get_ticks() - starttime
+        while (span < 20):
+            pygame.time.wait(1)
+            print 'wait for %d seconds ' % span
+            span = pygame.time.get_ticks() - starttime
+        print '-------------------------------------------------------'
 
 if __name__ == '__main__':
     '''
