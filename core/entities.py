@@ -122,7 +122,7 @@ class Tank(Entity):
         return self.alive()
     
     def rotate_gun_to(self, angle):
-        self.aim_direction = angle
+        self.aim_direction = angle % (math.pi * 2)
         self.top_bufimg, self.top_bufrect = tools.rot_center(self.top_img, self.top_img.get_rect(), self.aim_direction * 180 / math.pi)
     
     def render(self, display):
@@ -154,7 +154,9 @@ class Tank(Entity):
     def on_input(self, key, state):
         if self.key_binding.has_key(key):
             action = self.key_binding[key]
-            mult = 1 if state else -1
+            self.perform_action(action, 1 if state else -1)
+    
+    def perform_action(self, action, mult):
             if action == "left": self.turn_acceleration += math.pi/2000 * mult
             elif action == "right": self.turn_acceleration -= math.pi/2000 * mult
             elif action == "up": self.acceleration += 0.05 * mult
@@ -165,7 +167,7 @@ class Tank(Entity):
                 missile = self.shoot()
                 if missile != None:
                     self.world.append([missile.priority, missile])
-
+                    
 class Missile(Entity):
     
     def __init__(self, x, y, img, owner):

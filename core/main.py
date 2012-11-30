@@ -10,6 +10,7 @@ from entities import Tank, Missile, Base
 from particlesys import ParticleSystem
 import pygame
 import sys
+import ai
 
 ''' General constants '''
 WIDTH = 800
@@ -23,9 +24,9 @@ KEY_BINDINGS_1 = {pygame.K_LEFT: "left",
                 pygame.K_RIGHT: "right",
                 pygame.K_UP: "up",
                 pygame.K_DOWN: "down",
-                pygame.K_KP1: "gun_left",
-                pygame.K_KP3: "gun_right",
-                pygame.K_KP2: "gun_fire"}
+                pygame.K_n: "gun_left",
+                pygame.K_COMMA: "gun_right",
+                pygame.K_m: "gun_fire"}
 KEY_BINDINGS_2 = {pygame.K_a: "left",
                 pygame.K_d: "right",
                 pygame.K_w: "up",
@@ -99,9 +100,10 @@ def game_loop(tank1, tank2, world):
             elif event.type in [pygame.KEYDOWN, pygame.KEYUP]:
                 for listener in input_listener:
                     listener.on_input(event.key, event.type == pygame.KEYDOWN)
-        
+
         screen.fill(white)
         screen.blit(img, img.get_rect())
+        #ai.perform_action(tank1, tank2, world, screen)
         world.sort()
         for [p, entity] in world:
             if not entity.move():
