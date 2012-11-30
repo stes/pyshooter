@@ -8,8 +8,7 @@ handles the interaction between players in the game.
 
 from entities import Tank, Missile, Base
 from particlesys import ParticleSystem
-import pygame
-import sys
+import pygame, sys, ai
 
 ''' General constants '''
 WIDTH = 800
@@ -106,6 +105,9 @@ def game_loop(tank1, tank2, world):
         screen.fill(white)
         screen.blit(img, img.get_rect())
         world.sort()
+        
+        ai.perform_action(tank1, tank2, world, screen)
+        
         for [p, entity] in world:
             if not entity.move():
                 world.remove([entity.priority, entity])
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
     tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
     
-    input_listener.append(tank1)
+    #input_listener.append(tank1)
     input_listener.append(tank2)
     
     base1 = Base(100, 500, pygame.image.load("base.gif"), tank1)
