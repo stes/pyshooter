@@ -11,6 +11,7 @@ from particlesys import ParticleSystem
 import pygame
 import sys
 import ai
+import copy
 
 ''' General constants '''
 WIDTH = 800
@@ -103,7 +104,7 @@ def game_loop(tank1, tank2, world):
 
         screen.fill(white)
         screen.blit(img, img.get_rect())
-        #ai.perform_action(tank1, tank2, world, screen)
+        ai.perform_action(tank1, copy.copy(tank2), copy.deepcopy(world), screen)
         world.sort()
         for [p, entity] in world:
             if not entity.move():
