@@ -38,6 +38,7 @@ KEY_BINDINGS_2 = {pygame.K_a: "left",
 '''                                '''
 
 input_listener = []
+keys_pressed = []
 
 def check_collisions(world, entity):
     for p, e1 in world:
@@ -98,9 +99,12 @@ def game_loop(tank1, tank2, world):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type in [pygame.KEYDOWN, pygame.KEYUP]:
-                for listener in input_listener:
-                    listener.on_input(event.key, event.type == pygame.KEYDOWN)
+            elif event.type == pygame.KEYDOWN:
+                keys_pressed.append(event.key)
+            elif event.type == pygame.KEYUP:
+                keys_pressed.remove(event.key)
+        for l in input_listener:
+            l.on_input(keys_pressed)
 
         screen.fill(white)
         screen.blit(img, img.get_rect())

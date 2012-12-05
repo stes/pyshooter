@@ -41,7 +41,7 @@ def pid(current_error, params):
     # D
     error[2] = last_error - error[0]
     
-    print error
+    #print error
     
     last_error = error[0]
     return sum([error[i] * params[i] for i in range(3)])
@@ -57,10 +57,9 @@ def perform_action(tank, opponent, world, screen):
     direction = pid(angle*site, params)
     #print direction
 
-    tank.aim_velocity = -direction * math.pi/100
-    
-    '''
+    #tank.aim_velocity = -direction * math.pi/100
+    action = ''
     if direction < 0:
-        tank.perform_action('gun_left', 1)
+        action = 'gun_left'
     else:
-        tank.perform_action('gun_right', 1)'''
+        action = 'gun_right'
