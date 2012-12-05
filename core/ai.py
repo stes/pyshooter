@@ -32,6 +32,15 @@ def angle_between(tank1, tank2):
     angle = math.acos((dx*bx + dy*by) / (math.hypot(dx, dy) * math.hypot(bx, by)))
     return (angle, site)
 
+def distance_to_gunline(tank1, tank2):
+    [x1, y1] = tank1.location
+    [x2, y2] = tank2.location
+    g = tank2.aim_direction
+    [xg, yg] = [-math.sin(g), -math.cos(g)]
+    
+    d = -yg * (x2 - x1) + xg * (y2 - y1)
+    return d
+
 def pid(current_error, params):
     global error, last_error
         # P
@@ -48,18 +57,11 @@ def pid(current_error, params):
     
 def perform_action(tank, opponent, world, screen):
     global last_error, actions, last_action, wait, direction
-    
-    #pygame.draw.line(screen, (128, 0, 0), [x, y], [x+100*dx, y+100*dy])
-    #pygame.draw.line(screen, (0, 128, 0), [x, y], [x+100*bx, y+100*by])
-    
-    angle, site = angle_between(tank, opponent)
-    
-    direction = pid(angle*site, params)
-    #print direction
 
-    #tank.aim_velocity = -direction * math.pi/100
-    action = ''
+    angle, site = angle_between(tank, opponent)
+    direction = pid(angle*site, params)
+    print distance_to_gunline(tank, opponent)
     if direction < 0:
-        action = 'gun_left'
+        tank.perform_action(aim = 1)
     else:
-        action = 'gun_right'
+        tank.perform_action(aim = -1)

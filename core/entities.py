@@ -145,32 +145,30 @@ class Tank(Entity):
             missile = Missile(x, y, pygame.image.load("missile.gif"), self)
             self.ammo -= 1
             self.shoot_reload = 0
-            return missile
-        return None
+            self.world.append([missile.priority, missile])
     
     def set_world(self, world):
         self.world = world
     
     def on_input(self, keys):
-        self.turn_acceleration = 0
-        self.acceleration = 0
-        self.aim_acceleration = 0
+        # TODO improve this
+        actions = []
         for key in keys:
             if key in self.key_binding.keys():
-                action = self.key_binding[key]
-                self.perform_action(action)
+                actions.append(self.key_binding[key])
+        #
+        
+        move = ("up" in actions) - ("down" in actions)
+        turn = ("left" in actions) - ("right" in actions)
+        aim = ("gun_left" in actions) - ("gun_right" in actions)
+        self.perform_action(move, turn, aim)
+        if "gun_fire" in actions: self.shoot()
     
-    def perform_action(self, action):
-        if action == "left": self.turn_acceleration = 1
-        elif action == "right": self.turn_acceleration = -1
-        elif action == "up": self.acceleration = 1
-        elif action == "down": self.acceleration = -1
-        elif action == "gun_left": self.aim_acceleration = 1
-        elif action == "gun_right": self.aim_acceleration = -1
-        elif action == "gun_fire":
-            missile = self.shoot()
-            if missile != None:
-                self.world.append([missile.priority, missile])
+    def perform_action(self, move=0, turn=0, aim=0):
+        self.acceleration = int(move)
+        self.turn_acceleration = int(turn)
+        self.aim_acceleration = int(aim)
+                
                     
 class Missile(Entity):
     
