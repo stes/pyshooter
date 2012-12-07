@@ -168,6 +168,17 @@ class Tank(Entity):
         self.acceleration = int(move)
         self.turn_acceleration = int(turn)
         self.aim_acceleration = int(aim)
+    
+    def get_repr(self):
+        return [self.location[0] / self.map_rect.width,
+                self.location[1] / self.map_rect.height,
+                self.angle / (math.pi * 2.),
+                self.velocity / Tank.MAX_SPEED,
+                self.aim_direction / (math.pi * 2),
+                self.aim_velocity / Tank.MAX_TURN_SPEED,
+                self.turn_velocity / Tank.MAX_TURN_SPEED,
+                self.ammo / float(Tank.MAX_AMMO),
+                self.health / float(Tank.MAX_HEALTH)]
                 
                     
 class Missile(Entity):

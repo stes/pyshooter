@@ -32,6 +32,16 @@ def angle_between(tank1, tank2):
     angle = math.acos((dx*bx + dy*by) / (math.hypot(dx, dy) * math.hypot(bx, by)))
     return (angle, site)
 
+def world_repr(tank, opponent, world):
+    rep = []
+    rep.extend(tank.get_repr())
+    rep.extend(opponent.get_repr())
+    a, s = angle_between(tank, opponent)
+    rep.append(a*s)
+    a, s = angle_between(opponent, tank)
+    rep.append(a*s)
+    return rep
+
 def distance_to_gunline(tank1, tank2):
     [x1, y1] = tank1.location
     [x2, y2] = tank2.location
@@ -43,7 +53,7 @@ def distance_to_gunline(tank1, tank2):
 
 def pid(current_error, params):
     global error, last_error
-        # P
+    # P
     error[0] = current_error
     # I
     error[1] += error[0]
@@ -60,8 +70,10 @@ def perform_action(tank, opponent, world, screen):
 
     angle, site = angle_between(tank, opponent)
     direction = pid(angle*site, params)
-    print distance_to_gunline(tank, opponent)
+    #print distance_to_gunline(tank, opponent)
     if direction < 0:
         tank.perform_action(aim = 1)
     else:
         tank.perform_action(aim = -1)
+    r = world_repr(tank, opponent, world)
+    print "  ".join([str(int(r[i] * 100)/100.) for i in range(len(r))])
