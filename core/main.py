@@ -8,7 +8,9 @@ handles the interaction between players in the game.
 
 from entities import Tank, Missile, Base
 from particlesys import ParticleSystem
-import pygame, sys, ai
+import pygame
+import sys
+import ai
 import copy
 
 ''' General constants '''
@@ -36,6 +38,7 @@ KEY_BINDINGS_2 = {pygame.K_a: "left",
 '''                                '''
 
 input_listener = []
+keys_pressed = []
 
 def check_collisions(world, entity):
     for p, e1 in world:
@@ -99,13 +102,16 @@ def game_loop(tank1, tank2, world):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type in [pygame.KEYDOWN, pygame.KEYUP]:
-                for listener in input_listener:
-                    listener.on_input(event.key, event.type == pygame.KEYDOWN)
+            elif event.type == pygame.KEYDOWN:
+                keys_pressed.append(event.key)
+            elif event.type == pygame.KEYUP:
+                keys_pressed.remove(event.key)
+        for l in input_listener:
+            l.on_input(keys_pressed)
 
         screen.fill(white)
         screen.blit(img, img.get_rect())
-        #ai.perform_action(tank1, tank2, world, screen)
+        ai.perform_action(tank1, copy.copy(tank2), copy.deepcopy(world), screen)
         world.sort()
         
         ai.perform_action(tank1, copy.deepcopy(tank2), [copy.copy(world[i]) for i in range(len(world))], screen)
