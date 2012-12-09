@@ -8,6 +8,7 @@ import pygame
 from entities import Tank, Base, Entity
 import math
 
+
 last_error = 90
 actions = ["gun_right", "gun_left"]
 last_action = 0

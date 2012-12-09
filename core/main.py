@@ -95,7 +95,10 @@ def game_loop(tank1, tank2, world):
     the order specified above
     (iv) Finally, we wait some time before performing the next loop
     '''
+    
+    starttime = 0
     while 1:
+        starttime = pygame.time.get_ticks()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -110,6 +113,9 @@ def game_loop(tank1, tank2, world):
         screen.blit(img, img.get_rect())
         ai.perform_action(tank1, copy.copy(tank2), copy.deepcopy(world), screen)
         world.sort()
+        
+        ai.perform_action(tank1, copy.deepcopy(tank2), [copy.copy(world[i]) for i in range(len(world))], screen)
+        
         for [p, entity] in world:
             if not entity.move():
                 world.remove([entity.priority, entity])
@@ -123,7 +129,12 @@ def game_loop(tank1, tank2, world):
         render_gui(screen)
         
         pygame.display.flip()
-        pygame.time.wait(10)
+        span = pygame.time.get_ticks() - starttime
+        while (span < 20):
+            pygame.time.wait(1)
+            print 'wait for %d seconds ' % span
+            span = pygame.time.get_ticks() - starttime
+        print '-------------------------------------------------------'
 
 if __name__ == '__main__':
     '''
@@ -144,7 +155,7 @@ if __name__ == '__main__':
     tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
     tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
     
-    input_listener.append(tank1)
+    #input_listener.append(tank1)
     input_listener.append(tank2)
     
     base1 = Base(100, 500, pygame.image.load("base.gif"), tank1)
