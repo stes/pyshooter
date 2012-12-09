@@ -1,7 +1,3 @@
-'''
-Aufgabe: Bewege einen Ball über das Spielfeld, der von den Wänden abprallt
-'''
-
 import sys, pygame
 
 pygame.init()
