@@ -96,7 +96,6 @@ def game_loop(tank1, tank2, world):
     (iv) Finally, we wait some time before performing the next loop
     '''
     
-    starttime = 0
     while 1:
         starttime = pygame.time.get_ticks()
         for event in pygame.event.get():
@@ -130,11 +129,8 @@ def game_loop(tank1, tank2, world):
         
         pygame.display.flip()
         span = pygame.time.get_ticks() - starttime
-        while (span < 20):
-            pygame.time.wait(1)
-            print 'wait for %d seconds ' % span
-            span = pygame.time.get_ticks() - starttime
-        print '-------------------------------------------------------'
+        if (span < 15):
+            pygame.time.wait(span)
 
 if __name__ == '__main__':
     '''
