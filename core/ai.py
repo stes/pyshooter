@@ -15,6 +15,7 @@ wait = 2
 
 def perform_action(tank, opponent, world, screen):
     global last_error, actions, last_action, wait
+    opponent.perform_action("down", 1)
     [dx, dy] = [opponent.location[i] - tank.location[i] for i in [0,1]]
 
     angle = -math.pi/2 - math.atan2(dy, dx)
@@ -29,8 +30,6 @@ def perform_action(tank, opponent, world, screen):
     error = math.acos((dx*bx + dy*by) / (math.hypot(dx, dy) * math.hypot(bx, by)))
     
     diff = last_error - error;
-    print diff
+    print error
     
-
-    tank.perform_action("gun_right", -diff*10)
     last_error = error

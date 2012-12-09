@@ -9,6 +9,7 @@ handles the interaction between players in the game.
 from entities import Tank, Missile, Base
 from particlesys import ParticleSystem
 import pygame, sys, ai
+import copy
 
 ''' General constants '''
 WIDTH = 800
@@ -107,7 +108,7 @@ def game_loop(tank1, tank2, world):
         #ai.perform_action(tank1, tank2, world, screen)
         world.sort()
         
-        ai.perform_action(tank1, tank2, world, screen)
+        ai.perform_action(tank1, copy.deepcopy(tank2), [copy.copy(world[i]) for i in range(len(world))], screen)
         
         for [p, entity] in world:
             if not entity.move():
