@@ -120,7 +120,7 @@ def game_loop(tank1, tank2, world):
 #        ai.observe(tank2, tank1_copy, world_copy, screen)
         #ai.perform_action(tank1, tank2_copy, world_copy)
         tank1.action(tank2_copy, world_copy)
-        tank2.action(tank1_copy, world_copy)
+        #tank2.action(tank1_copy, world_copy)
         
         for [p, entity] in world:
             if not entity.move():
@@ -161,10 +161,10 @@ if __name__ == '__main__':
     '''
 
     tank1 = ai.AIBot(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
-    tank2 = ai.AIBot(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
+    tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
     
     #input_listener.append(tank1)
-    #input_listener.append(tank2)
+    input_listener.append(tank2)
     
     base1 = Base(100, 500, pygame.image.load("base.gif"), tank1)
     base2 = Base(700, 100, pygame.image.load("base.gif"), tank2)
