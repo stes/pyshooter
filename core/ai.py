@@ -6,7 +6,7 @@ Created on 25.11.2012
 
 import pygame
 from entities import Tank, Base, Entity
-import math
+import mathh
 
 last_error = 90
 actions = ["gun_right", "gun_left"]
