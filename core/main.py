@@ -96,6 +96,7 @@ def game_loop(tank1, tank2, world):
     (iv) Finally, we wait some time before performing the next loop
     '''
     
+    starttime = 0
     while 1:
         starttime = pygame.time.get_ticks()
         for event in pygame.event.get():
@@ -110,10 +111,16 @@ def game_loop(tank1, tank2, world):
 
         screen.fill(white)
         screen.blit(img, img.get_rect())
-        ai.perform_action(tank1, copy.copy(tank2), copy.deepcopy(world), screen)
         world.sort()
         
-        ai.perform_action(tank1, copy.deepcopy(tank2), [copy.copy(world[i]) for i in range(len(world))], screen)
+        world_copy = [copy.copy(world[i]) for i in range(len(world))]
+        tank1_copy = copy.deepcopy(tank1)
+        tank2_copy = copy.deepcopy(tank2)
+#        ai.observe(tank1, tank2_copy, world_copy, screen)
+#        ai.observe(tank2, tank1_copy, world_copy, screen)
+        #ai.perform_action(tank1, tank2_copy, world_copy)
+        tank1.action(tank2_copy, world_copy)
+        #tank2.action(tank1_copy, world_copy)
         
         for [p, entity] in world:
             if not entity.move():
@@ -129,9 +136,20 @@ def game_loop(tank1, tank2, world):
         
         pygame.display.flip()
         span = pygame.time.get_ticks() - starttime
-        if (span < 15):
-            pygame.time.wait(span)
+        while (span < 20):
+            pygame.time.wait(1)
+            print 'wait for %d seconds ' % span
+            span = pygame.time.get_ticks() - starttime
 
+pygame.init()
+
+size = width, height = WIDTH, HEIGHT
+white = 0xff, 0xff, 0xff
+
+
+
+screen = pygame.display.set_mode(size)
+    
 if __name__ == '__main__':
     '''
     This is the program's starting point.
@@ -141,14 +159,8 @@ if __name__ == '__main__':
     All entities are placed in a list, which we call world.
     At last, the game loop can be started using this list.
     '''
-    pygame.init()
-    
-    size = width, height = WIDTH, HEIGHT
-    white = 0xff, 0xff, 0xff
-    
-    screen = pygame.display.set_mode(size)
-    
-    tank1 = Tank(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
+
+    tank1 = ai.AIBot(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
     tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
     
     #input_listener.append(tank1)
