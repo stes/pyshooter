@@ -12,6 +12,9 @@ import pygame
 import sys
 import ai
 import copy
+from logger import Logger
+
+
 
 ''' General constants '''
 WIDTH = 800
@@ -95,12 +98,13 @@ def game_loop(tank1, tank2, world):
     the order specified above
     (iv) Finally, we wait some time before performing the next loop
     '''
-    
+    logger = Logger('locs.dat')
     starttime = 0
     while 1:
         starttime = pygame.time.get_ticks()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                del(logger)
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 keys_pressed.append(event.key)
@@ -128,6 +132,8 @@ def game_loop(tank1, tank2, world):
             else:
                 check_collisions(world, entity)
                 entity.render(screen)
+                
+        logger.log(tank1, tank2, world)
         
         psys.tick()
         psys.render(screen)
@@ -138,7 +144,7 @@ def game_loop(tank1, tank2, world):
         span = pygame.time.get_ticks() - starttime
         while (span < 20):
             pygame.time.wait(1)
-            print 'wait for %d seconds ' % span
+            #print 'wait for %d seconds ' % span
             span = pygame.time.get_ticks() - starttime
 
 pygame.init()

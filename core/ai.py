@@ -14,7 +14,6 @@ import main
 import copy
 import tools
 
-
 class AntiGravity():
     
     def wall_error(self, x, y):
@@ -163,6 +162,29 @@ def sample(x):
     actions.append(shoot)
     return actions
 
+class RandomBot(Tank):
+    
+    def __init__(self, x, y, img, top_img, key_binding=None):
+        Tank.__init__(self, x, y, img, top_img, key_binding)
+        self.pid_aim = PIDControl([10., 0., 1.])
+    
+    def action(self, opponent, world):
+        a, s = angle_between(self, opponent)
+        aim = [0, 0]
+        if self.pid_aim.pid(a*s) < 0: aim = [1, 0]
+        else: aim = [0, 1]
+        
+        turn = [rnd(0.50), rnd(0.25)]
+        move = [0, 1]
+        shoot = [0]
+        
+        best_action = move + turn + aim + shoot
+        self.perform_action(best_action)
+
+def rnd(prob):
+    return int(random.random() <= prob)
+
+
 class AIBot(Tank):
     
     def __init__(self, x, y, img, top_img, key_binding=None):
@@ -174,9 +196,8 @@ class AIBot(Tank):
     def action(self, opponent, world):
         global actions, wait, direction, model, observations, targets, pid_aim, pid_move, pid_turn
         a, s = angle_between(self, opponent)
-        direction = self.pid_aim.pid(a*s)
         aim = [0, 0]
-        if direction < 0: aim = [1, 0]
+        if self.pid_aim.pid(a*s) < 0: aim = [1, 0]
         else: aim = [0, 1]
         
         g = self.compute_error(opponent, world)
@@ -210,6 +231,8 @@ class AIBot(Tank):
         best_action = move + turn + aim + shoot
     
         self.perform_action(best_action)
+        
+        print self.location
 
     def missile_error(self, world):
         g1, g2 = 0,0
