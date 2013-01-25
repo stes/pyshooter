@@ -127,7 +127,8 @@ def game_loop(tank1, tank2, world):
         #tank2.action(tank1_copy, world_copy)
         
         for [p, entity] in world:
-            if not entity.move():
+            entity.move()
+            if not entity.alive():
                 world.remove([entity.priority, entity])
             else:
                 check_collisions(world, entity)

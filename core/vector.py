@@ -7,6 +7,9 @@ class Vector2D:
 	def dot(self, other):
 		return self.x*other.x + self.y*other.y
 	
+	def square(self):
+		return self.dot(self)
+	
 	def __add__(self, other):
 		return Vector2D(self.x + other.x, self.y + other.y)
 	
