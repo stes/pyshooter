@@ -221,7 +221,7 @@ class Tank(Entity):
                 
                     
 class Missile(Entity):
-    missile_img = 0
+    missile_img = None
     
     def __init__(self, x, y, owner):
         Entity.__init__(self, x, y, Missile.missile_img, 5)
