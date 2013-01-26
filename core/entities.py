@@ -260,7 +260,7 @@ class Base(Entity):
     
     def move(self):
         if self.owner.collide_entities(self) and self.preparation_time == 0:
-            while (self.owner.ammo < 10):
+            while self.owner.ammo < 10:
                 self.preparation_time += 50
                 self.owner.ammo += 1
         self.preparation_time = max(self.preparation_time - 1, 0)
