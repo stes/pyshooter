@@ -49,7 +49,7 @@ def check_collisions(world, entity):
             if isinstance(e1, Tank):
                 if isinstance(entity, Missile):
                     e1.damage(entity)
-                    psys.explosion(entity.location[0], entity.location[1], 200)
+                    psys.explosion(entity.location.x, entity.location.y, 200)
                 if isinstance(entity, Tank):
                     entity.step_back()
                     e1.step_back()

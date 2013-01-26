@@ -13,6 +13,7 @@ import random
 import main
 import copy
 import tools
+from vector import Vector2D
 
 class AntiGravity():
     
@@ -21,17 +22,17 @@ class AntiGravity():
         Ex *= main.WIDTH**2
         Ey = 1 / y**2 - 1 / math.fabs((y - main.HEIGHT) ** 2)
         Ey *= main.HEIGHT**2
-        return [Ex, Ey]
+        return Vector2D(Ex, Ey)
         
     def point_error(self, location, p, force):
-        [x, y] = location
-        e = force / (math.hypot((x - p[0]),(y - p[1])) ** 2)
-        return [(x-p[0]) * e, (y-p[1])*e]
+        [x, y] = location.list()
+        e = force / (math.hypot((x - p.x),(y - p.y)) ** 2)
+        return Vector2D((x-p.x) * e, (y-p.y)*e)
     
     def continious_gradient(self, location, p, force):
-        [x, y] = location
-        e = force / (math.hypot((x - p[0]),(y - p[1])))
-        return [(x-p[0]) * e, (y-p[1])*e]
+        [x, y] = location.list()
+        e = force / (math.hypot((x - p.x),(y - p.y)))
+        return Vector2D((x-p.x) * e, (y-p.y)*e)
     
     def add_gravity_point(self, x, y, force):
         self.gravity_points.append([x, y, force])
@@ -67,25 +68,23 @@ actions = [[0, 0],
            [1, 0]]
 
 def angle_between(tank1, tank2):
-    [dx, dy] = [tank2.location[i] - tank1.location[i] for i in [0,1]]
+    diff = tank2.location - tank1.location
     g = tank1.aim_direction
-    [bx, by] = [-math.sin(g), -math.cos(g)]
+    b = Vector2D(-math.sin(g), -math.cos(g))
     
-    s = site([dx, dy], [bx, by])
+    s = site(diff, b)
     
-    [x, y] = tank1.location
-    
-    a = angle([dx, dy], [bx, by])
+    a = angle(diff, b)
     return (a, s)
 
 def site(a, b):
-    return tools.sign(b[0]*a[1] - b[1]*a[0])
+    return tools.sign(a.cross(b))
 
 def angle(a, b, abs=False):
-    scalar = a[0]*b[0] + a[1]*b[1]
-    if abs: scalar=math.fabs(scalar)
-    return math.acos((scalar) /
-              (math.hypot(a[0], a[1]) * math.hypot(b[0], b[1])))
+    dot = a.dot(b)
+    if abs: dot=math.fabs(dot)
+    return math.acos((dot) /
+              (math.hypot(a.x, a.y) * math.hypot(b.x, b.y)))
 
 def world_repr(tank, opponent, world):
     rep = []
@@ -98,11 +97,14 @@ def world_repr(tank, opponent, world):
     return rep
 
 def distance_to_line(a, b, g):
-    [x1, y1] = a
-    [x2, y2] = b
-    [xg, yg] = [-math.sin(g), -math.cos(g)]
-    d = -yg * (x2 - x1) + xg * (y2 - y1)
-    xf = [-yg * d, xg * d]
+    #[x1, y1] = a
+    #[x2, y2] = b
+    g = Vector2D(-math.sin(g), -math.cos(g))
+    #d = -yg * (x2 - x1) + xg * (y2 - y1)
+    #xf = [-yg * d, xg * d]
+    
+    d, xf = a.projection(b, g)
+    
     return [math.fabs(d), xf]
     
 def observe(tank, opponent, world, screen):
@@ -202,14 +204,14 @@ class AIBot(Tank):
         
         g = self.compute_error(opponent, world)
         
-        if g[0] == 0 and g[1] == 0:
+        if g.x == 0 and g.y == 0:
             return
         
 #        [x, y] = self.location[:]
 #        [x0, y0] = [x+10*g[0], y+10*g[1]]
 #        pygame.draw.line(main.screen, pygame.Color(0, 128, 0), (x,y), (x0,y0), 5)
         
-        a = [-math.sin(self.angle),-math.cos(self.angle)]
+        a = Vector2D(-math.sin(self.angle),-math.cos(self.angle))
 #        [x1, y1] = [x+100*a[0], y+100*a[1]]
 #        pygame.draw.line(main.screen, pygame.Color(0, 0, 128), (x,y), (x1,y1), 5)
         
@@ -235,39 +237,36 @@ class AIBot(Tank):
         print self.location
 
     def missile_error(self, world):
-        g1, g2 = 0,0
+        error = Vector2D()
         for m in world:
             entity = m[1]
             if isinstance(entity, Missile) and entity.owner != self:
                 [d, dv] = distance_to_line(self.location, entity.location, entity.angle)
-                xf = [self.location[i] + dv[i] for i in range(2)]
-                [g1_, g2_] = self.anti_gravity.point_error(self.location, xf, 50000)
-                g1+=g1_
-                g2+=g2_
-                pygame.draw.rect(main.screen, pygame.Color(200,0,0),(xf[0],xf[1],20,20))
-        return g1, g2
+                xf = self.location + dv
+                error += self.anti_gravity.point_error(self.location, xf, 50000)
+                pygame.draw.rect(main.screen, pygame.Color(200,0,0),(xf.x,xf.y,20,20))
+        return error
 
     def compute_error(self, opponent, world):
-        [x, y] = self.location
-        [d, dv] = distance_to_line(self.location, opponent.location, opponent.aim_direction)
-        xf = [x+dv[0], y+dv[1]]
-        pygame.draw.rect(main.screen, pygame.Color(0,128,0),(xf[0],xf[1],10,10))
+        x, y = self.location.x, self.location.y
+        d, dv = distance_to_line(self.location, opponent.location, opponent.aim_direction)
+        xf = self.location + dv
+        pygame.draw.rect(main.screen, pygame.Color(0,128,0),(xf.x,xf.y,10,10))
         g = self.anti_gravity.wall_error(x, y)
         
         # avoid gunline
         r, s = angle_between(opponent, self)
-        g1, g2 = 0, 0
+        gunline_error = Vector2D(0,0)
         if r < math.pi/2:
-            g1, g2 = self.anti_gravity.point_error([x, y], xf, 10000)
+            gunline_error = self.anti_gravity.point_error(self.location, xf, 10000)
         
         # avoid missiles
         m_error = self.missile_error(world)
         
         # go to base
-        g_base = [0,0]
-        if self.location[0] != self.base.location[0] or self.location[1] != self.base.location[1]:
+        g_base = Vector2D(0, 0)
+        if self.location.x != self.base.location.x or self.location.y != self.base.location.y:
             g_base = self.anti_gravity.continious_gradient(self.location, self.base.location, -1000/(0.1+self.ammo**2))
         
-        g[0] += g1 + m_error[0] + g_base[0]
-        g[1] += g2 + m_error[1] + g_base[1]
+        g += gunline_error + m_error + g_base
         return g

@@ -37,7 +37,8 @@ class Entity():
             math.cos(self.angle) * self.velocity)
     
     def render(self, display):
-        display.blit(self.bufimg, [self.location[i] - self.bufrect[i+2]/2 for i in [0, 1]])
+        l = self.location.list()
+        display.blit(self.bufimg, [l[i] - self.bufrect[i+2]/2 for i in [0, 1]])
     
     def get_radius(self):
         return (self.img.get_rect()[2] + self.img.get_rect()[3]) / 2
@@ -84,7 +85,7 @@ class Tank(Entity):
         return self.shoot_reload == Tank.RELOAD_TIME and self.ammo > 0
     
     def step_back(self):
-        self.location = self.old_location[:]
+        self.location = self.old_location.copy()
     
     def to_base(self, b):
         if b.owner == self:
@@ -101,7 +102,7 @@ class Tank(Entity):
             
     def move(self):
         # save copy of old location
-        self.old_location = self.location[:]
+        self.old_location = self.location.copy()
         
         # update velocities
         self.aim_velocity = self.decelerate(self.aim_acceleration, self.aim_velocity, Tank.DCL_AIM, Tank.MAX_TURN_SPEED)
@@ -139,11 +140,12 @@ class Tank(Entity):
         
     
     def check_borders(self):
+        l = self.location
         for i in [0, 1]:
-            if self.location[i]-self.bufrect[i+2]/2 < self.map_rect[i]:
-                self.location[i] = self.map_rect[i] + self.bufrect[i+2]/2
-            if self.location[i]+self.bufrect[i+2]/2 > self.map_rect[i]+self.map_rect[i+2]:
-                self.location[i] = self.map_rect[i]+self.map_rect[i+2] - self.bufrect[i+2]/2
+            if l[i]-self.bufrect[i+2]/2 < self.map_rect[i]:
+                l[i] = self.map_rect[i] + self.bufrect[i+2]/2
+            if l[i]+self.bufrect[i+2]/2 > self.map_rect[i]+self.map_rect[i+2]:
+                l[i] = self.map_rect[i]+self.map_rect[i+2] - self.bufrect[i+2]/2
     
     def rotate_gun_to(self, angle):
         self.aim_direction = angle % (math.pi * 2)
@@ -153,7 +155,7 @@ class Tank(Entity):
     def render(self, display):
         Entity.render(self, display)
         rect = self.top_bufrect
-        display.blit(self.top_bufimg, [self.location[i] - rect[i+2]/2 for i in [0, 1]])
+        display.blit(self.top_bufimg, [self.location.list()[i] - rect[i+2]/2 for i in [0, 1]])
     
     def damage(self, missile):
         if missile.owner != self:
@@ -165,9 +167,11 @@ class Tank(Entity):
 
     def shoot(self):
         if self.ready_to_shoot():
-            x, y = (self.location[0] - math.sin(self.aim_direction) * 40),\
-                    (self.location[1] - math.cos(self.aim_direction) * 40)
-            missile = Missile(x, y, pygame.image.load("missile.gif"), self)
+            safe_dist = Vector2D(math.sin(self.aim_direction) * 40,
+                                 math.cos(self.aim_direction) * 40)
+            
+            start_pos = self.location - safe_dist
+            missile = Missile(start_pos.x, start_pos.y, pygame.image.load("missile.gif"), self)
             self.ammo -= 1
             self.shoot_reload = 0
             self.world.append([missile.priority, missile])
@@ -235,8 +239,8 @@ class Missile(Entity):
     def move(self):
         Entity.move(self)
         self.ttl -= 1
-        if self.location[0] < 0 or self.location[0] > self.map_rect.width or \
-            self.location[1] < 0 or self.location[1] > self.map_rect.height:
+        if self.location.x < 0 or self.location.x > self.map_rect.width or \
+            self.location.y < 0 or self.location.y > self.map_rect.height:
             self.destroy()
         
         return self.alive()
