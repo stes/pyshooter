@@ -142,7 +142,7 @@ def game_loop(tank1, tank2, world):
         pygame.display.set_caption("FPS: %f" % (clock.get_fps(), ))
         pygame.display.flip()
         
-        clock.tick()
+        clock.tick(60)
 
 
 pygame.init()
@@ -173,6 +173,7 @@ if __name__ == '__main__':
     background_img = pygame.transform.scale(background_img, size)
     
     missile_img = pygame.image.load("missile.gif")
+    Missile.missile_img = missile_img
     
     world = [base1, base2, tank1, tank2]
     world = [[e.priority, e] for e in world]
