@@ -198,9 +198,7 @@ class AIBot(Tank):
     def action(self, opponent, world):
         global actions, wait, direction, model, observations, targets, pid_aim, pid_move, pid_turn
         a, s = angle_between(self, opponent)
-        aim = [0, 0]
-        if self.pid_aim.pid(a*s) < 0: aim = [1, 0]
-        else: aim = [0, 1]
+        aim = tools.sign(-self.pid_aim.pid(a*s))
         
         g = self.compute_error(opponent, world)
         
@@ -218,21 +216,11 @@ class AIBot(Tank):
         r = angle(a, g)
         s = site(a, g)
         
-        t = self.pid_turn.pid(min(r, math.fabs(math.pi-r))*s)
-        turn = [0, 0]
-        if t < 0: turn = [0, 1]
-        else: turn = [1, 0]
-        
-        move = [0, 0]
-        if r > math.pi/2: move = [0, 1]
-        else: move = [1, 0]
-        
-        shoot = [0]
-        if (r < math.pi/16): shoot = [1]
-        
-        best_action = move + turn + aim + shoot
+        turn = tools.sign(self.pid_turn.pid(min(r, math.fabs(math.pi-r))*s))
+        move = tools.sign(math.pi/2 - r)
+        shoot = r < math.pi/16
     
-        self.perform_action(best_action)
+        self.perform_action(move, turn, aim, shoot)
         
         print self.location
 

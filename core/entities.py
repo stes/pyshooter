@@ -189,27 +189,17 @@ class Tank(Entity):
             if key in self.key_binding.keys():
                 actions.append(self.key_binding[key])
         #
-        self.last_action = [int("up" in actions),
-                            int("down" in actions),
-                            int("left" in actions),
-                            int("right" in actions),
-                            int("gun_left" in actions),
-                            int("gun_right" in actions),
-                            int("gun_fire" in actions)]
-        self.perform_action(self.last_action)
+        self.perform_action(
+                int("up" in actions) - int("down" in actions),
+                int("left" in actions) - int("right" in actions),
+                int("gun_left" in actions) - int("gun_right" in actions),
+                int("gun_fire" in actions))
     
-    def perform_action(self, actions):
-        move = actions[0] - actions[1]
-        turn = actions[2] - actions[3]
-        aim = actions[4] - actions[5]
-        self.last_action = actions[:]
-        self.perform_action_move(move, turn, aim)
-        if actions[6]: self.shoot()
-    
-    def perform_action_move(self, move=0, turn=0, aim=0):
-        self.acceleration = int(move)
-        self.turn_acceleration = int(turn)
-        self.aim_acceleration = int(aim)
+    def perform_action(self, move=0, turn=0, aim=0, shoot=0):
+        self.acceleration = tools.sign(move)
+        self.turn_acceleration = tools.sign(turn)
+        self.aim_acceleration = tools.sign(aim)
+        if shoot: self.shoot()
     
     def get_repr(self):
         return [self.location[0] / self.map_rect.width,
