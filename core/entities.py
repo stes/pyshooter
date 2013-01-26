@@ -78,6 +78,9 @@ class Tank(Entity):
         self.last_action = [0, 0, 0]
         self.base = None
     
+    def __lt__(self, other):
+        return self.priority < other.priority
+    
     def set_base(self, base):
         self.base = base
     
@@ -174,7 +177,7 @@ class Tank(Entity):
             missile = Missile(start_pos.x, start_pos.y, self)
             self.ammo -= 1
             self.shoot_reload = 0
-            self.world.append([missile.priority, missile])
+            self.world.append(missile)
     
     def set_world(self, world):
         self.world = world

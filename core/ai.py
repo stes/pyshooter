@@ -238,20 +238,19 @@ class AIBot(Tank):
 
     def missile_error(self, world):
         error = Vector2D()
-        for m in world:
-            entity = m[1]
+        for entity in world:
             if isinstance(entity, Missile) and entity.owner != self:
                 [d, dv] = distance_to_line(self.location, entity.location, entity.angle)
                 xf = self.location + dv
                 error += self.anti_gravity.point_error(self.location, xf, 50000)
-                pygame.draw.rect(main.screen, pygame.Color(200,0,0),(xf.x,xf.y,20,20))
+                #pygame.draw.rect(main.screen, pygame.Color(200,0,0),(xf.x,xf.y,20,20))
         return error
 
     def compute_error(self, opponent, world):
         x, y = self.location.x, self.location.y
         d, dv = distance_to_line(self.location, opponent.location, opponent.aim_direction)
         xf = self.location + dv
-        pygame.draw.rect(main.screen, pygame.Color(0,128,0),(xf.x,xf.y,10,10))
+        #pygame.draw.rect(main.screen, pygame.Color(0,128,0),(xf.x,xf.y,10,10))
         g = self.anti_gravity.wall_error(x, y)
         
         # avoid gunline

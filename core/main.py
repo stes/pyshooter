@@ -44,15 +44,15 @@ input_listener = []
 keys_pressed = []
 
 def check_collisions(world, entity):
-    for p, e1 in world:
-        if e1 != entity and e1.collide_entities(entity):
-            if isinstance(e1, Tank):
+    for e in world:
+        if e != entity and e.collide_entities(entity):
+            if isinstance(e, Tank):
                 if isinstance(entity, Missile):
-                    e1.damage(entity)
+                    e.damage(entity)
                     psys.explosion(entity.location.x, entity.location.y, 200)
                 if isinstance(entity, Tank):
                     entity.step_back()
-                    e1.step_back()
+                    e.step_back()
 
 
 def render_gui(screen):
@@ -117,7 +117,7 @@ def game_loop(tank1, tank2, world):
         world.sort()
         
         world_copy = [copy.copy(world[i]) for i in range(len(world))]
-        tank1_copy = copy.deepcopy(tank1)
+        #tank1_copy = copy.deepcopy(tank1)
         tank2_copy = copy.deepcopy(tank2)
 #        ai.observe(tank1, tank2_copy, world_copy, screen)
 #        ai.observe(tank2, tank1_copy, world_copy, screen)
@@ -125,10 +125,10 @@ def game_loop(tank1, tank2, world):
         tank1.action(tank2_copy, world_copy)
         #tank2.action(tank1_copy, world_copy)
         
-        for [p, entity] in world:
+        for entity in world:
             entity.move()
             if not entity.alive():
-                world.remove([entity.priority, entity])
+                world.remove(entity)
             else:
                 check_collisions(world, entity)
                 entity.render(screen)
@@ -145,11 +145,6 @@ def game_loop(tank1, tank2, world):
         clock.tick(60)
 
 
-pygame.init()
-
-size = WIDTH, HEIGHT
-screen = pygame.display.set_mode(size)
-
 if __name__ == '__main__':
     '''
     This is the program's starting point.
@@ -159,6 +154,11 @@ if __name__ == '__main__':
     All entities are placed in a list, which we call world.
     At last, the game loop can be started using this list.
     '''
+    
+    pygame.init()
+
+    size = WIDTH, HEIGHT
+    screen = pygame.display.set_mode(size)
 
     tank1 = ai.AIBot(100, 500, pygame.image.load("tank1.gif"), pygame.image.load("tank1_top.gif"), KEY_BINDINGS_1)
     tank2 = Tank(700, 100, pygame.image.load("tank2.gif"), pygame.image.load("tank2_top.gif"), KEY_BINDINGS_2)
@@ -176,7 +176,6 @@ if __name__ == '__main__':
     Missile.missile_img = missile_img
     
     world = [base1, base2, tank1, tank2]
-    world = [[e.priority, e] for e in world]
     tank1.set_world(world)
     tank2.set_world(world)
     game_loop(tank1, tank2, world)
