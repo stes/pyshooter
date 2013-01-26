@@ -7,12 +7,12 @@ handles the interaction between players in the game.
 
 
 from entities import Tank, Missile, Base
+from logger import Logger
 from particlesys import ParticleSystem
-import pygame
-import sys
 import ai
 import copy
-from logger import Logger
+import pygame
+import sys
 
 
 
@@ -54,19 +54,17 @@ def check_collisions(world, entity):
                     entity.step_back()
                     e1.step_back()
 
+
 def render_gui(screen):
     pygame.draw.rect(screen, pygame.Color(0x44, 0x44, 0x44), (0, 0, 500, 60))
     pygame.draw.rect(screen, pygame.Color(0x44, 0x44, 0x44), (300, 540, 500, 60))
     
-    missile = pygame.image.load("missile.gif")
-    
-    missile_rect = missile.get_rect()
+    missile_rect = missile_img.get_rect()
     for i in range(tank2.ammo):
-        screen.blit(missile, [480-missile_rect[2]*i*2, 20])
+        screen.blit(missile_img, [480-missile_rect[2]*i*2, 20])
     
-    missile_rect = missile.get_rect()
     for i in range(tank1.ammo):
-        screen.blit(missile, [WIDTH - missile_rect[2]*i*2, HEIGHT-40])
+        screen.blit(missile_img, [WIDTH - missile_rect[2]*i*2, HEIGHT-40])
     
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, 200, 20), 2)
     pygame.draw.rect(screen, pygame.Color(128, 0, 0), (10, 25, tank2.health*200/Tank.MAX_HEALTH, 20))
@@ -80,7 +78,7 @@ def render_gui(screen):
     
     pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, 200, 10), 2)
     pygame.draw.rect(screen, pygame.Color(0, 128, 0), (310, 550, tank1.shoot_reload*200/Tank.RELOAD_TIME, 10))
-        
+
 
 def game_loop(tank1, tank2, world):
     '''
@@ -99,9 +97,10 @@ def game_loop(tank1, tank2, world):
     (iv) Finally, we wait some time before performing the next loop
     '''
     logger = Logger('locs.dat')
-    starttime = 0
+    
+    clock = pygame.time.Clock()
+    
     while 1:
-        starttime = pygame.time.get_ticks()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 del(logger)
@@ -113,8 +112,8 @@ def game_loop(tank1, tank2, world):
         for l in input_listener:
             l.on_input(keys_pressed)
 
-        screen.fill(white)
-        screen.blit(img, img.get_rect())
+        screen.fill(pygame.Color(255, 255, 255)) # white
+        screen.blit(background_img, background_img.get_rect())
         world.sort()
         
         world_copy = [copy.copy(world[i]) for i in range(len(world))]
@@ -133,30 +132,24 @@ def game_loop(tank1, tank2, world):
             else:
                 check_collisions(world, entity)
                 entity.render(screen)
-                
+        
         logger.log(tank1, tank2, world)
         
         psys.tick()
         psys.render(screen)
-        
         render_gui(screen)
         
+        pygame.display.set_caption("FPS: %f" % (clock.get_fps(), ))
         pygame.display.flip()
-        span = pygame.time.get_ticks() - starttime
-        while (span < 20):
-            pygame.time.wait(1)
-            #print 'wait for %d seconds ' % span
-            span = pygame.time.get_ticks() - starttime
+        
+        clock.tick()
+
 
 pygame.init()
 
-size = width, height = WIDTH, HEIGHT
-white = 0xff, 0xff, 0xff
-
-
-
+size = WIDTH, HEIGHT
 screen = pygame.display.set_mode(size)
-    
+
 if __name__ == '__main__':
     '''
     This is the program's starting point.
@@ -176,14 +169,12 @@ if __name__ == '__main__':
     base1 = Base(100, 500, pygame.image.load("base.gif"), tank1)
     base2 = Base(700, 100, pygame.image.load("base.gif"), tank2)
     
-    img = pygame.image.load('dirt.jpg')
-    img = pygame.transform.scale(img, (WIDTH, HEIGHT))
+    background_img = pygame.image.load('dirt.jpg')
+    background_img = pygame.transform.scale(background_img, size)
     
-    world = []
-    world.append(base1)
-    world.append(base2)
-    world.append(tank1)
-    world.append(tank2)
+    missile_img = pygame.image.load("missile.gif")
+    
+    world = [base1, base2, tank1, tank2]
     world = [[e.priority, e] for e in world]
     tank1.set_world(world)
     tank2.set_world(world)

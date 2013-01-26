@@ -9,7 +9,7 @@ import tools
 import pygame
 from vector import Vector2D
 
-map = pygame.Rect(0, 0, 800, 600)
+game_map = pygame.Rect(0, 0, 800, 600)
 
 class Entity():
     
@@ -23,7 +23,7 @@ class Entity():
         self.img = img
         self.bufimg = self.img
         if self.bufimg != None: self.bufrect = self.bufimg.get_rect()
-        self.map_rect = map
+        self.map_rect = game_map
         self.priority = priority
     
     def set_angle(self, angle):
@@ -171,7 +171,7 @@ class Tank(Entity):
                                  math.cos(self.aim_direction) * 40)
             
             start_pos = self.location - safe_dist
-            missile = Missile(start_pos.x, start_pos.y, pygame.image.load("missile.gif"), self)
+            missile = Missile(start_pos.x, start_pos.y, self)
             self.ammo -= 1
             self.shoot_reload = 0
             self.world.append([missile.priority, missile])
@@ -222,8 +222,10 @@ class Tank(Entity):
                     
 class Missile(Entity):
     
-    def __init__(self, x, y, img, owner):
-        Entity.__init__(self, x, y, img, 5)
+    missile_img = pygame.image.load("missile.gif")
+    
+    def __init__(self, x, y, owner):
+        Entity.__init__(self, x, y, Missile.missile_img, 5)
         self.velocity = 10
         self.owner = owner
         self.set_angle(owner.aim_direction)
@@ -242,8 +244,6 @@ class Missile(Entity):
         if self.location.x < 0 or self.location.x > self.map_rect.width or \
             self.location.y < 0 or self.location.y > self.map_rect.height:
             self.destroy()
-        
-        return self.alive()
 
 class Base(Entity):
     
@@ -262,5 +262,4 @@ class Base(Entity):
                 self.preparation_time += 50
                 self.owner.ammo += 1
         self.preparation_time = max(self.preparation_time - 1, 0)
-        return True
         

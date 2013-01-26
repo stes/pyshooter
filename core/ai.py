@@ -8,7 +8,7 @@ import pygame
 import entities
 from entities import Tank, Base, Entity, Missile
 import math
-import numpy
+#import numpy
 import random
 import main
 import copy
