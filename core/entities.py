@@ -7,13 +7,14 @@ the base class implementation 'Entity'.
 import math
 import tools
 import pygame
+from vector import Vector2D
 
 map = pygame.Rect(0, 0, 800, 600)
 
 class Entity():
     
     def __init__(self, x, y, img, priority):
-        self.location = [x, y]
+        self.location = Vector2D(x, y)
         self.angle = 0
         self.velocity = 0
         self.acceleration = 0
@@ -31,9 +32,9 @@ class Entity():
             self.bufimg, self.bufrect = tools.rot_center(self.img, self.img.get_rect(), self.angle * 180 / math.pi)
     
     def move(self):
-        self.location[0] -= math.sin(self.angle) * self.velocity
-        self.location[1] -= math.cos(self.angle) * self.velocity
-        return self.alive()
+        self.location -= Vector2D(
+            math.sin(self.angle) * self.velocity,
+            math.cos(self.angle) * self.velocity)
     
     def render(self, display):
         display.blit(self.bufimg, [self.location[i] - self.bufrect[i+2]/2 for i in [0, 1]])
@@ -41,11 +42,11 @@ class Entity():
     def get_radius(self):
         return (self.img.get_rect()[2] + self.img.get_rect()[3]) / 2
     
-    def collide(self, x, y):
-        return self.get_radius()**2 > (self.location[0] - x)**2 + (self.location[1] - y)**2
+    def collide(self, vector):
+        return self.get_radius()**2 > (self.location-vector).square()
     
     def collide_entities(self, other):
-        return 0.3*(self.get_radius()+other.get_radius())**2 > (self.location[0] - other.location[0])**2 + (self.location[1] - other.location[1])**2
+        return 0.3*(self.get_radius()+other.get_radius())**2 > (self.location-other.location).square()
 
     def alive(self):
         return True
