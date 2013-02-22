@@ -5,7 +5,7 @@ class Ball:
     # Konstruktor
     def __init__(self):
         self.image = pygame.image.load('ball.gif')
-        self.img_rect = self.image.get_rect()
+        [self.width, self.height] = self.image.get_rect().width, self.image.get_rect().height
         self.speed = [2, 2]
         self.pos = [100, 100]
         
@@ -13,16 +13,15 @@ class Ball:
         '''
         Diese Methode zeigt den Ball auf dem Spielfeld an
         '''
-        screen.blit(self.image, self.img_rect)
+        screen.blit(self.image, (self.pos, (111, 111)))
     
     def move(self):
         self.pos = [self.pos[0] + self.speed[0],
                     self.pos[1] + self.speed[1]]
-        if self.pos[0] < 0 or self.pos[0]+self.img_rect.width > width:
+        if self.pos[0] < 0 or self.pos[0]+self.width > width:
             self.speed[0] = -self.speed[0]
-        if self.pos[1] < 0 or self.pos[1]+self.img_rect.height > height:
+        if self.pos[1] < 0 or self.pos[1]+self.height > height:
             self.speed[1] = -self.speed[1]
-        self.img_rect.left, self.img_rect.right = self.pos
 
 pygame.init()
 
