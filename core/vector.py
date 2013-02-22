@@ -93,18 +93,3 @@ class Vector2D:
 	
 	def __len__(self):
 		return 2
-		
-# The following lines should be processed
-# correctly.
-
-a = Vector2D(1, 2)
-b = Vector2D(2, 3)
-c = Vector2D(1, 42)
-
-print a+b
-print a-c
-print a*c
-print a.dot(c)
-print a+(-b)
-print c**2
-print b/5.

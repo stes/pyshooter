@@ -8,16 +8,6 @@ size = width, height = 500, 500
 black = (0, 0, 0)
 screen = pygame.display.set_mode(size)
 
-p1 = Player(width/3, height/3, "Red", (255, 0, 0))
-p2 = Player(width*2/3, height*2/3, "Blue", (0, 0, 255))
-
-keybinding = { 	pygame.K_y : [p1, -1], pygame.K_x : [p1, 1], \
-				pygame.K_n : [p2, -1], pygame.K_m : [p2, 1]
-			 }
-
-all_players = [p1, p2]
-game_map = pygame.Surface(size)
-
 class Player:
 
 	TURN_SPEED = pi/50
@@ -45,7 +35,7 @@ class Player:
 	
 	def tick(self):
 		self.location = self.move(self.velocity)
-		self.draw_line = not self.check_borders() or self.check_break()
+		self.draw_line = (not self.check_borders()) and (not self.check_break())
 	
 	def check_break(self):
 		self.break_counter -= 1
@@ -65,8 +55,7 @@ class Player:
 		return False
 		
 	def render(self, map):
-		if not self.crossed_borders:
-			pygame.draw.circle(map, self.color, (int(self.x()), int(self.y())), Player.RADIUS)
+		if self.draw_line: pygame.draw.circle(map, self.color, (int(self.x()), int(self.y())), Player.RADIUS)
 	
 	def has_collided(self, map):
 		x,y = self.move(Player.RADIUS+2)
@@ -82,6 +71,17 @@ class Player:
 	def alive(self):
 		pass
 
+		
+p1 = Player(width/3, height/3, "Red", (255, 0, 0))
+p2 = Player(width*2/3, height*2/3, "Blue", (0, 0, 255))
+
+keybinding = { 	pygame.K_y : [p1, -1], pygame.K_x : [p1, 1], \
+				pygame.K_n : [p2, -1], pygame.K_m : [p2, 1]
+			 }
+
+all_players = [p1, p2]
+game_map = pygame.Surface(size)
+		
 def init():
 	players = all_players[:]
 	game_map.fill (black)
@@ -90,7 +90,7 @@ def init():
 def start_game():
 	pressed = []
 	players, game_map = init()
-	while len(players) > 0:
+	while len(players) > 1:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
@@ -106,15 +106,14 @@ def start_game():
 			player, action = keybinding[key]
 			player.turn(action)
 		
-		rm = []
-		for i in range(len(players)):
-			pl = players[i]
+		players_copy = players[:]
+		for pl in players_copy:
 			pl.tick()
 			pl.render(game_map)
 			if pl.has_collided(game_map):
-				players.pop(i)
+				players.remove(pl)
 				
-		screen.blit(game_map, (0, 0, width, height))
+		screen.blit(game_map, game_map.get_rect())
 		
 		for pl in players: pygame.draw.circle(screen, pl.color, (int(pl.x()), int(pl.y())), Player.RADIUS)
 				
@@ -124,8 +123,7 @@ def start_game():
 	ranking = [(pl.points, pl.name) for pl in all_players]
 	ranking.sort(reverse=True)
 	for line in ["%s:  %d points" % (p[1], p[0]) for p in ranking]:
-		text = get_pointlist(line)
-		print text
+		print line
 
 
 while True:
