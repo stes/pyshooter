@@ -47,10 +47,10 @@ class Player:
 	
 	def check_borders(self):
 		if self.x() < 0 or self.x() > width:
-			self.location[0] %= width
+			self.location.x %= width
 			return True
 		if self.y() < 0 or self.y() > height:
-			self.location[1] %= height
+			self.location.y %= height
 			return True
 		return False
 		
@@ -63,10 +63,10 @@ class Player:
 		return pixel[0:3] != (0, 0, 0)
 	
 	def x(self):
-		return self.location[0]
+		return self.location.x
 	
 	def y(self):
-		return self.location[1]
+		return self.location.y
 	
 	def alive(self):
 		pass
@@ -81,20 +81,21 @@ keybinding = { 	pygame.K_y : [p1, -1], pygame.K_x : [p1, 1], \
 
 all_players = [p1, p2]
 game_map = pygame.Surface(size)
+
+clock = pygame.time.Clock()
 		
 def init():
 	players = all_players[:]
-	game_map.fill (black)
+	game_map.fill(black)
 	return players, game_map
 	
-def start_game():
+def run_game():
 	pressed = []
 	players, game_map = init()
 	while len(players) > 1:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
+				return False
 			if event.type == pygame.KEYDOWN:
 				if keybinding.has_key(event.key):
 					pressed.append(event.key)
@@ -118,20 +119,22 @@ def start_game():
 		for pl in players: pygame.draw.circle(screen, pl.color, (int(pl.x()), int(pl.y())), Player.RADIUS)
 				
 		pygame.display.flip()
-		pygame.time.wait(10)
+		clock.tick(60)
 		
 	ranking = [(pl.points, pl.name) for pl in all_players]
 	ranking.sort(reverse=True)
 	for line in ["%s:  %d points" % (p[1], p[0]) for p in ranking]:
 		print line
+	
+	return True
 
-
-while True:
+running = True
+while running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
-			pygame.quit()
-			sys.exit()
+			running = False
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_SPACE:
-				start_game()
+				running = run_game()
 
+pygame.quit()
