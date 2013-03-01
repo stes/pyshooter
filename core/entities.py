@@ -7,13 +7,14 @@ the base class implementation 'Entity'.
 import math
 import tools
 import pygame
+from vector import Vector2D
 
-map = pygame.Rect(0, 0, 800, 600)
+game_map = pygame.Rect(0, 0, 800, 600)
 
 class Entity():
     
     def __init__(self, x, y, img, priority):
-        self.location = [x, y]
+        self.location = Vector2D(x, y)
         self.angle = 0
         self.velocity = 0
         self.acceleration = 0
@@ -22,7 +23,7 @@ class Entity():
         self.img = img
         self.bufimg = self.img
         if self.bufimg != None: self.bufrect = self.bufimg.get_rect()
-        self.map_rect = map
+        self.map_rect = game_map
         self.priority = priority
     
     def set_angle(self, angle):
@@ -30,22 +31,23 @@ class Entity():
         if self.bufimg != None:
             self.bufimg, self.bufrect = tools.rot_center(self.img, self.img.get_rect(), self.angle * 180 / math.pi)
     
-    def tick(self):
-        self.location[0] -= math.sin(self.angle) * self.velocity
-        self.location[1] -= math.cos(self.angle) * self.velocity
-        return self.alive()
+    def move(self):
+        self.location -= Vector2D(
+            math.sin(self.angle) * self.velocity,
+            math.cos(self.angle) * self.velocity)
     
-    def render(self, screem):
-        screem.blit(self.bufimg, [self.location[i] - self.bufrect[i+2]/2 for i in [0, 1]])
+    def render(self, display):
+        l = self.location.list()
+        display.blit(self.bufimg, [l[i] - self.bufrect[i+2]/2 for i in [0, 1]])
     
     def get_radius(self):
         return (self.img.get_rect()[2] + self.img.get_rect()[3]) / 2
     
-    def collide(self, x, y):
-        return self.get_radius()**2 > (self.location[0] - x)**2 + (self.location[1] - y)**2
+    def collide(self, vector):
+        return self.get_radius()**2 > (self.location-vector).square()
     
     def collide_entities(self, other):
-        return 0.3*(self.get_radius()+other.get_radius())**2 > (self.location[0] - other.location[0])**2 + (self.location[1] - other.location[1])**2
+        return 0.3*(self.get_radius()+other.get_radius())**2 > (self.location-other.location).square()
 
     def alive(self):
         return True
@@ -76,6 +78,9 @@ class Tank(Entity):
         self.last_action = [0, 0, 0]
         self.base = None
     
+    def __lt__(self, other):
+        return self.priority < other.priority
+    
     def set_base(self, base):
         self.base = base
     
@@ -83,7 +88,7 @@ class Tank(Entity):
         return self.shoot_reload == Tank.RELOAD_TIME and self.ammo > 0
     
     def step_back(self):
-        self.location = self.old_location[:]
+        self.location = self.old_location.copy()
     
     def to_base(self, base):
         if base.owner == self:
@@ -100,7 +105,7 @@ class Tank(Entity):
             
     def tick(self):
         # save copy of old location
-        self.old_location = self.location[:]
+        self.old_location = self.location.copy()
         
         # update velocities
         self.aim_velocity = self.decelerate(self.aim_acceleration, self.aim_velocity, Tank.DCL_AIM, Tank.MAX_TURN_SPEED)
@@ -138,11 +143,12 @@ class Tank(Entity):
         
     
     def check_borders(self):
+        l = self.location
         for i in [0, 1]:
-            if self.location[i]-self.bufrect[i+2]/2 < self.map_rect[i]:
-                self.location[i] = self.map_rect[i] + self.bufrect[i+2]/2
-            if self.location[i]+self.bufrect[i+2]/2 > self.map_rect[i]+self.map_rect[i+2]:
-                self.location[i] = self.map_rect[i]+self.map_rect[i+2] - self.bufrect[i+2]/2
+            if l[i]-self.bufrect[i+2]/2 < self.map_rect[i]:
+                l[i] = self.map_rect[i] + self.bufrect[i+2]/2
+            if l[i]+self.bufrect[i+2]/2 > self.map_rect[i]+self.map_rect[i+2]:
+                l[i] = self.map_rect[i]+self.map_rect[i+2] - self.bufrect[i+2]/2
     
     def rotate_gun_to(self, angle):
         self.aim_direction = angle % (math.pi * 2)
@@ -164,12 +170,14 @@ class Tank(Entity):
 
     def shoot(self):
         if self.ready_to_shoot():
-            x, y = (self.location[0] - math.sin(self.aim_direction) * 40),\
-                    (self.location[1] - math.cos(self.aim_direction) * 40)
-            missile = Missile(x, y, pygame.image.load("missile.gif"), self)
+            safe_dist = Vector2D(math.sin(self.aim_direction) * 40,
+                                 math.cos(self.aim_direction) * 40)
+            
+            start_pos = self.location - safe_dist
+            missile = Missile(start_pos.x, start_pos.y, self)
             self.ammo -= 1
             self.shoot_reload = 0
-            self.world.append([missile.priority, missile])
+            self.world.append(missile)
     
     def set_world(self, world):
         self.world = world
@@ -181,28 +189,17 @@ class Tank(Entity):
             if key in self.key_binding.keys():
                 actions.append(self.key_binding[key])
         #
-        
-        self.last_action = [int("up" in actions),
-                            int("down" in actions),
-                            int("left" in actions),
-                            int("right" in actions),
-                            int("gun_left" in actions),
-                            int("gun_right" in actions),
-                            int("gun_fire" in actions)]
-        self.perform_action(self.last_action)
+        self.perform_action(
+                int("up" in actions) - int("down" in actions),
+                int("left" in actions) - int("right" in actions),
+                int("gun_left" in actions) - int("gun_right" in actions),
+                int("gun_fire" in actions))
     
-    def perform_action(self, actions):
-        move = actions[0] - actions[1]
-        turn = actions[2] - actions[3]
-        aim = actions[4] - actions[5]
-        self.last_action = actions[:]
-        self.perform_action_move(move, turn, aim)
-        if actions[6]: self.shoot()
-    
-    def perform_action_move(self, move=0, turn=0, aim=0):
-        self.acceleration = int(move)
-        self.turn_acceleration = int(turn)
-        self.aim_acceleration = int(aim)
+    def perform_action(self, move=0, turn=0, aim=0, shoot=0):
+        self.acceleration = tools.sign(move)
+        self.turn_acceleration = tools.sign(turn)
+        self.aim_acceleration = tools.sign(aim)
+        if shoot: self.shoot()
     
     def get_repr(self):
         return [self.location[0] / self.map_rect.width,
@@ -217,9 +214,10 @@ class Tank(Entity):
                 
                     
 class Missile(Entity):
+    missile_img = None
     
-    def __init__(self, x, y, img, owner):
-        Entity.__init__(self, x, y, img, 5)
+    def __init__(self, x, y, owner):
+        Entity.__init__(self, x, y, Missile.missile_img, 5)
         self.velocity = 10
         self.owner = owner
         self.set_angle(owner.aim_direction)
@@ -235,11 +233,9 @@ class Missile(Entity):
     def tick(self):
         Entity.tick(self)
         self.ttl -= 1
-        if self.location[0] < 0 or self.location[0] > self.map_rect.width or \
-            self.location[1] < 0 or self.location[1] > self.map_rect.height:
+        if self.location.x < 0 or self.location.x > self.map_rect.width or \
+            self.location.y < 0 or self.location.y > self.map_rect.height:
             self.destroy()
-        
-        return self.alive()
 
 class Base(Entity):
     
@@ -254,9 +250,8 @@ class Base(Entity):
     
     def tick(self):
         if self.owner.collide_entities(self) and self.preparation_time == 0:
-            while (self.owner.ammo < 10):
+            while self.owner.ammo < 10:
                 self.preparation_time += 50
                 self.owner.ammo += 1
         self.preparation_time = max(self.preparation_time - 1, 0)
-        return True
         

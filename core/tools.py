@@ -13,6 +13,7 @@ def rot_center(image, rect, angle):
     return rot_image, rot_rect
 
 def sign(x):
+    print x
     if x == 0:
         return 0
     return x / fabs(x)
