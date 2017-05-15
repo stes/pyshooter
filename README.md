@@ -4,6 +4,8 @@ A simple two-player shooter game written in Python, using the Pygame Library.
 Playing is possible against AI or human opponent.
 The AI is implemented using a simple gradient based strategy, see ``pyshooter/ai.py`` for further information.
 
+![Example Image](img/screenshot.png)
+
 # Requirements
 
 - numpy
