@@ -3,6 +3,26 @@
 A simple two-player shooter game written in Python, using the Pygame Library.
 Playing is possible against AI or human opponent.
 
+# Requirements
+
+- numpy
+- pygame
+- python 2.7
+
+# Starting
+
+```
+$ cd pyshooter
+$ python main.py
+```
+
+# Control
+
+Control movement with ``W-A-S-D``.
+Move the gun with ``G-J`` and shoot with ``H``.
+
+Keybindings can easily be adjusted in ``pyshooter/main.py``.
+
 # License
 
 The MIT License (MIT)
